@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Plants">
 <meta name="format-detection" content="telephone=no">
-<meta name="theme-color" content="#0E1130">
+<meta name="theme-color" content="#06171A">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Plant Tracker</title>
 <link rel="manifest" href="./manifest.webmanifest">
@@ -18,24 +18,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0E1130;
-  --surface:#181C44;
-  --soft:#232857;
-  --raised:#323872;
-  --ink:#F5F2FF;
-  --muted:#A4A8D4;
-  --line:#2D3366;
-  --accent:#FF3C78;
-  --accent-ink:#170A22;
-  --teal:#00CED1;
-  --magenta:#C04DFF;
-  --coral:#FF6B35;
+  --bg:#06171A;
+  --surface:#0D2427;
+  --soft:#143236;
+  --raised:#1F4A4B;
+  --ink:#ECFBF6;
+  --muted:#93BDB4;
+  --line:#1A3B3D;
+  --accent:#2FE6C8;
+  --accent-ink:#03201B;
+  --teal:#C3F25C;
+  --magenta:#1FAE85;
+  --coral:#0F8A5F;
   --danger:#FF6B6B;
   --burgundy:#A3214A;
   --burgundy-ink:#FF9DB9;
   --amber:#FFB23E;
-  --grad:linear-gradient(90deg,#2F5BFF 0%,#C04DFF 38%,#FF3C78 68%,#FF6B35 100%);
-  --grad-v:linear-gradient(180deg,#C04DFF 0%,#FF3C78 60%,#FF6B35 100%);
+  --grad:linear-gradient(90deg,#5CF5E0 0%,#2FD9B6 30%,#18A97F 65%,#0B6E47 100%);
+  --grad-v:linear-gradient(180deg,#5CF5E0 0%,#22BF97 55%,#0E7F55 100%);
   --display:"Barlow Semi Condensed","SF Pro Display",-apple-system,system-ui,sans-serif;
   --body:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
   --oct:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
@@ -107,10 +107,6 @@ svg{display:block}
 .pcard.done .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--surface) 70%)}
 .pcard.over .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--burgundy) 22%,var(--surface)),var(--surface) 75%)}
 .pcard.today .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--amber) 9%,var(--surface)),var(--surface) 70%)}
-.pcard-in::before{content:"";position:absolute;left:7px;top:28px;width:5px;height:5px;transform:translateY(-50%) rotate(45deg);background:var(--raised);z-index:1}
-.pcard.done .pcard-in::before{background:var(--accent)}
-.pcard.today .pcard-in::before{background:var(--amber)}
-.pcard.over .pcard-in::before{background:var(--burgundy-ink)}
 
 .card-main{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;align-items:stretch;justify-content:center;align-self:stretch;padding:2px 0 4px}
 .card-title{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.15;overflow-wrap:anywhere;text-align:center;padding-left:62px}
@@ -156,7 +152,7 @@ svg{display:block}
 @keyframes ray{0%{opacity:1;transform:rotate(var(--r)) translateY(-24px) scaleY(.4)}100%{opacity:0;transform:rotate(var(--r)) translateY(-44px) scaleY(1)}}
 
 /* Faint Art Deco palm-leaf pattern on plant cards */
-.pcard-in::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2764%27 height=%2764%27 viewBox=%270 0 64 64%27%3E%3Cpath d=%27M3 64A29 29 0 0 1 61 64M10 64A22 22 0 0 1 54 64M25 64A7 7 0 0 1 39 64M23.8 61.8L4.0 56.5M24.6 59.8L6.9 49.5M26.0 58.0L11.5 43.5M27.7 56.6L17.5 38.9M29.8 55.8L24.5 36.0M32.0 55.5L32.0 35.0M34.2 55.8L39.5 36.0M36.2 56.6L46.5 38.9M38.0 58.0L52.5 43.5M39.4 59.8L57.1 49.5M40.2 61.8L60.0 56.5M1 64H25M39 64H63M-29 32A29 29 0 0 1 29 32M-22 32A22 22 0 0 1 22 32M-7 32A7 7 0 0 1 7 32M-8.2 29.8L-28.0 24.5M-7.4 27.8L-25.1 17.5M-6.0 26.0L-20.5 11.5M-4.3 24.6L-14.5 6.9M-2.2 23.8L-7.5 4.0M-0.0 23.5L-0.0 3.0M2.2 23.8L7.5 4.0M4.2 24.6L14.5 6.9M6.0 26.0L20.5 11.5M7.4 27.8L25.1 17.5M8.2 29.8L28.0 24.5M-31 32H-7M7 32H31M35 32A29 29 0 0 1 93 32M42 32A22 22 0 0 1 86 32M57 32A7 7 0 0 1 71 32M55.8 29.8L36.0 24.5M56.6 27.8L38.9 17.5M58.0 26.0L43.5 11.5M59.8 24.6L49.5 6.9M61.8 23.8L56.5 4.0M64.0 23.5L64.0 3.0M66.2 23.8L71.5 4.0M68.2 24.6L78.5 6.9M70.0 26.0L84.5 11.5M71.4 27.8L89.1 17.5M72.2 29.8L92.0 24.5M33 32H57M71 32H95%27 fill=%27none%27 stroke=%27%23C9C3F0%27 stroke-width=%271%27 stroke-linecap=%27round%27/%3E%3C/svg%3E") 0 0/56px 56px repeat;opacity:.06}
+.pcard-in::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2764%27 height=%2764%27 viewBox=%270 0 64 64%27%3E%3Cpath d=%27M3 64A29 29 0 0 1 61 64M10 64A22 22 0 0 1 54 64M25 64A7 7 0 0 1 39 64M23.8 61.8L4.0 56.5M24.6 59.8L6.9 49.5M26.0 58.0L11.5 43.5M27.7 56.6L17.5 38.9M29.8 55.8L24.5 36.0M32.0 55.5L32.0 35.0M34.2 55.8L39.5 36.0M36.2 56.6L46.5 38.9M38.0 58.0L52.5 43.5M39.4 59.8L57.1 49.5M40.2 61.8L60.0 56.5M1 64H25M39 64H63M-29 32A29 29 0 0 1 29 32M-22 32A22 22 0 0 1 22 32M-7 32A7 7 0 0 1 7 32M-8.2 29.8L-28.0 24.5M-7.4 27.8L-25.1 17.5M-6.0 26.0L-20.5 11.5M-4.3 24.6L-14.5 6.9M-2.2 23.8L-7.5 4.0M-0.0 23.5L-0.0 3.0M2.2 23.8L7.5 4.0M4.2 24.6L14.5 6.9M6.0 26.0L20.5 11.5M7.4 27.8L25.1 17.5M8.2 29.8L28.0 24.5M-31 32H-7M7 32H31M35 32A29 29 0 0 1 93 32M42 32A22 22 0 0 1 86 32M57 32A7 7 0 0 1 71 32M55.8 29.8L36.0 24.5M56.6 27.8L38.9 17.5M58.0 26.0L43.5 11.5M59.8 24.6L49.5 6.9M61.8 23.8L56.5 4.0M64.0 23.5L64.0 3.0M66.2 23.8L71.5 4.0M68.2 24.6L78.5 6.9M70.0 26.0L84.5 11.5M71.4 27.8L89.1 17.5M72.2 29.8L92.0 24.5M33 32H57M71 32H95%27 fill=%27none%27 stroke=%27%23BFF2E4%27 stroke-width=%271%27 stroke-linecap=%27round%27/%3E%3C/svg%3E") 0 0/56px 56px repeat;opacity:.06}
 .pcard.done .pcard-in::after{opacity:.09}
 .pcard.over .pcard-in::after,.pcard.today .pcard-in::after{opacity:.08}
 
@@ -245,7 +241,7 @@ svg{display:block}
 .tab[aria-current="page"]{color:var(--accent)}
 
 /* ---------- Sheets ---------- */
-.overlay{position:fixed;inset:0;z-index:40;background:rgba(5,6,22,.62);display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease}
+.overlay{position:fixed;inset:0;z-index:40;background:rgba(2,10,11,.66);display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease}
 .sheet{width:100%;max-width:560px;max-height:90vh;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;position:relative;
   padding:10px max(18px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 22px) max(18px,env(safe-area-inset-left));animation:up .24s cubic-bezier(.2,.9,.3,1)}
 .sheet::before{content:"";position:absolute;left:22px;right:22px;top:0;height:2px;background:var(--grad)}
@@ -465,20 +461,20 @@ function sunburst(){
     rays += `<line x1="280" y1="250" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="url(#sg)" stroke-width="${i % 2 ? 1 : 2.2}"/>`;
   }
   const arcs = [70, 110, 150].map(r => `<path d="M${280 - r} 250 A${r} ${r} 0 0 1 ${280 + r} 250" fill="none" stroke="url(#sg)" stroke-width="1" opacity=".7"/>`).join("");
-  return `<svg class="sunburst" viewBox="0 0 560 250" aria-hidden="true"><defs><linearGradient id="sg" x1="0" x2="1"><stop offset="0" stop-color="#2F5BFF"/><stop offset=".4" stop-color="#C04DFF"/><stop offset=".7" stop-color="#FF3C78"/><stop offset="1" stop-color="#FF6B35"/></linearGradient></defs>${rays}${arcs}</svg>`;
+  return `<svg class="sunburst" viewBox="0 0 560 250" aria-hidden="true"><defs><linearGradient id="sg" x1="0" x2="1"><stop offset="0" stop-color="#5CF5E0"/><stop offset=".4" stop-color="#2FD9B6"/><stop offset=".7" stop-color="#18A97F"/><stop offset="1" stop-color="#0B6E47"/></linearGradient></defs>${rays}${arcs}</svg>`;
 }
 // Empty-state art: a Deco potted palm under a half sunburst
 function potArt(){
   let rays = "";
-  for (let i = 0; i < 9; i++) { const a = Math.PI + Math.PI * (i + .5) / 9; rays += `<line x1="75" y1="62" x2="${(75 + Math.cos(a) * 66).toFixed(1)}" y2="${(62 + Math.sin(a) * 66).toFixed(1)}" stroke="#323872" stroke-width="1.5"/>`; }
+  for (let i = 0; i < 9; i++) { const a = Math.PI + Math.PI * (i + .5) / 9; rays += `<line x1="75" y1="62" x2="${(75 + Math.cos(a) * 66).toFixed(1)}" y2="${(62 + Math.sin(a) * 66).toFixed(1)}" stroke="#1F4A4B" stroke-width="1.5"/>`; }
   let leaves = "";
   for (const [a, len] of [[-58, 34], [-28, 42], [0, 46], [28, 42], [58, 34]]) {
     const w = len * .22;
-    leaves += `<path transform="rotate(${a} 75 62)" d="M75 62Q${75 - w} ${62 - len * .55} 75 ${62 - len}Q${75 + w} ${62 - len * .55} 75 62Z" fill="#181C44" stroke="url(#pg)" stroke-width="2"/>`;
+    leaves += `<path transform="rotate(${a} 75 62)" d="M75 62Q${75 - w} ${62 - len * .55} 75 ${62 - len}Q${75 + w} ${62 - len * .55} 75 62Z" fill="#0D2427" stroke="url(#pg)" stroke-width="2"/>`;
   }
-  return `<svg viewBox="0 0 150 104" aria-hidden="true"><defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#2F5BFF"/><stop offset=".5" stop-color="#FF3C78"/><stop offset="1" stop-color="#FF6B35"/></linearGradient></defs>${rays}${leaves}
-    <path d="M54 62h42l-6 30H60z" fill="#181C44" stroke="url(#pg)" stroke-width="2" stroke-linejoin="round"/><path d="M58 70h34M61 78h28" stroke="#323872" stroke-width="1.5"/>
-    <path d="M10 96h130M22 101h106" stroke="#323872" stroke-width="1.5"/><rect x="71" y="83" width="8" height="8" transform="rotate(45 75 87)" fill="#FF3C78"/></svg>`;
+  return `<svg viewBox="0 0 150 104" aria-hidden="true"><defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#5CF5E0"/><stop offset=".5" stop-color="#22BF97"/><stop offset="1" stop-color="#0B6E47"/></linearGradient></defs>${rays}${leaves}
+    <path d="M54 62h42l-6 30H60z" fill="#0D2427" stroke="url(#pg)" stroke-width="2" stroke-linejoin="round"/><path d="M58 70h34M61 78h28" stroke="#1F4A4B" stroke-width="1.5"/>
+    <path d="M10 96h130M22 101h106" stroke="#1F4A4B" stroke-width="1.5"/><rect x="71" y="83" width="8" height="8" transform="rotate(45 75 87)" fill="#2FE6C8"/></svg>`;
 }
 
 /* ===================== Text helpers ===================== */
@@ -808,7 +804,7 @@ function haptic(){
 let toastTimer;
 function celebrate(title, sub){
   const root = document.getElementById("toast-root");
-  const colors = ["#FF3C78", "#C04DFF", "#FF6B35", "#00CED1", "#2F5BFF"];
+  const colors = ["#5CF5E0", "#2FD9B6", "#18A97F", "#C3F25C", "#0B6E47"];
   const bitsHTML = Array.from({ length: 22 }, (_, i) => {
     const a = Math.PI * (i / 21), r = 90 + Math.random() * 90;
     return `<i style="background:${colors[i % 5]};--x:${(Math.cos(a) * r * (Math.random() > .5 ? 1 : -1)).toFixed(0)}px;--y:${(Math.sin(a) * r * .9 + 40).toFixed(0)}px;animation-delay:${(Math.random() * .12).toFixed(2)}s"></i>`;

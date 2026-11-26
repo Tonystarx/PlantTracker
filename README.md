@@ -1,6 +1,6 @@
 # Plant Tracker
 
-A plant watering tracker built for iPhone, styled with Art Deco touches and the Stretch Timer color scheme.
+A plant watering tracker built for iPhone, styled with Art Deco touches and an aqua-to-dark-green gradient palette.
 
 ## Features
 
