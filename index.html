@@ -117,7 +117,7 @@ svg{display:block}
 .since{color:var(--muted);font-size:15px;margin-top:2px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
 .since b{font-family:var(--display);font-size:24px;line-height:1;color:var(--ink);font-weight:700;letter-spacing:.02em}
 .since svg{width:14px;height:14px;align-self:center;color:var(--accent);flex:none}
-.prow{display:flex;align-items:flex-start;gap:10px;position:relative;z-index:1}
+.prow{display:flex;align-items:center;gap:12px;position:relative;z-index:1;min-height:66px}
 .prow.top .badge{margin-top:4px;flex:none}
 .prow.bottom{align-items:center;margin-top:2px}
 .prow.bottom .check-wrap{margin:8px 3px 0 0}
@@ -566,12 +566,8 @@ function card(p){
   const rays = Array.from({ length: 10 }, (_, i) => `<i style="--r:${i * 36}deg"></i>`).join("");
   return `<div class="pcard ${cls}" data-id="${p.id}">
     <div class="pcard-in">
-      <div class="prow top">
-        <button class="title-btn" data-a="open-plant" data-id="${p.id}"><div class="card-title">${esc(p.name)}</div></button>
-        ${badgeHTML(p, w)}
-      </div>
-      <div class="prow bottom">
-        <button class="card-main" data-a="open-plant" data-id="${p.id}" aria-label="Open ${esc(p.name)}">${sinceHTML(w)}${fertHTML(p)}</button>
+      <div class="prow">
+        <button class="card-main" data-a="open-plant" data-id="${p.id}"><div class="card-title">${esc(p.name)}</div>${sinceHTML(w)}${fertHTML(p)}</button>
         <div class="check-wrap"><span class="burst">${rays}</span>
           <button class="check ${w.doneToday ? "on" : ""}" data-a="toggle" data-id="${p.id}" role="checkbox" aria-checked="${w.doneToday}" aria-label="Mark ${esc(p.name)} watered today">${I.check}</button></div>
       </div>

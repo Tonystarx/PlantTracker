@@ -5,7 +5,7 @@ A plant watering tracker built for iPhone, styled with Art Deco touches and the 
 ## Features
 
 - Unlimited plant cards. Add, edit, or delete a plant, with a name, watering interval, optional room (shown on the plant page), and notes.
-- Each card shows days since the last watering, with the due status beside the name and the checkmark below it, over a faint Art Deco palm-leaf pattern. Cards sort so the plant that needs water soonest is on top.
+- Each card shows days since the last watering, over a faint Art Deco palm-leaf pattern. Cards sort so the plant that needs water soonest is on top.
 - Tap the checkmark after watering. Tap it again to undo today's log.
 - Overdue cards turn burgundy, plants due today turn amber, and plants watered today get the gradient frame.
 - Optional fertilizing schedule per plant, shown as a line on the card and logged from the plant's page or the calendar.
