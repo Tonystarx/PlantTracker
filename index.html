@@ -611,7 +611,6 @@ function viewPlants(){
       <h3>No plants yet</h3>
       <p>Add a plant and how often it needs water. Tap its checkmark each time you water it.</p>
       <button class="btn" data-a="add">Add a plant</button>
-      <button class="text-btn" data-a="demo">Load sample data to explore</button>
     </div>`;
   const pr = progress();
   const segs = pr.set.map((x, i) => `<i class="${x.on ? "on" : x.late ? "late" : ""}" style="--segw:${pr.set.length * 100}%;--segx:${pr.set.length > 1 ? (i / (pr.set.length - 1) * 100).toFixed(1) : 0}%"></i>`).join("");
@@ -1055,7 +1054,6 @@ const A = {
     document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   },
   import: () => document.getElementById("importFile").click(),
-  demo: () => { S = demoData(); save(); UI.tab = "plants"; UI.sheet ? closeSheet() : render(); snack("Sample data loaded"); }
 };
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-a]"); if (!el || el.disabled) return;
@@ -1113,34 +1111,6 @@ document.getElementById("importFile").addEventListener("change", async e => {
     S = data; save(); closeSheet(); snack("Backup imported");
   } catch(err){ snack("That file isn't a plant backup"); }
 });
-
-/* ===================== Sample data (testing only) ===================== */
-function demoData(){
-  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  // [name, every, days since last watering (null = never), fertilize every, days since last feeding, notes]
-  const defs = [
-    ["Fiddle leaf fig", 7, 9, 30, 20, "Bright indirect light. Rotate a quarter turn each week.", 410],
-    ["Monstera", 5, 5, 28, 31, "", 760],
-    ["Basil", 2, 0, null, null, "Pinch flowers off.", 45],
-    ["Snake plant", 14, 12, null, null, "Let soil dry out fully.", null],
-    ["Pothos", 6, 2, null, null, "", 1200],
-    ["Calathea", 4, null, null, null, "Filtered water only.", null]
-  ];
-  const plants = [], log = {};
-  defs.forEach(([name, every, last, fertEvery, fertLast, notes, adoptedAgo], i) => {
-    const id = "demo" + i, L = log[id] = {};
-    if (last !== null) {
-      for (let d = addDays(T, -last), n = 0; diffDays(d, T) < 80 && n < 40; n++) {
-        L[d] = (L[d] || 0) | WATER;
-        d = addDays(d, -(every + Math.floor(rnd() * 3) - 1));
-      }
-    }
-    if (fertEvery) for (let d = addDays(T, -fertLast); diffDays(d, T) < 80; d = addDays(d, -fertEvery)) L[d] = (L[d] || 0) | FERT;
-    const keys = Object.keys(L).sort();
-    plants.push({ id, name, every: name === "Snake plant" ? null : every, adopted: adoptedAgo ? addDays(T, -adoptedAgo) : "", notes, fert: fertEvery, created: keys[0] || T });
-  });
-  return { v: 1, plants, log };
-}
 
 /* ===================== Day rollover & boot ===================== */
 function checkDay(){ const k = todayKey(); if (k !== T) { T = k; UI.week = weekStartOf(T); UI.month = T.slice(0,7); render(); if (UI.sheet && UI.sheet.type !== "form") renderSheet(); } }
