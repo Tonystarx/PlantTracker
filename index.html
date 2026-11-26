@@ -58,6 +58,7 @@ input,textarea{font:inherit;font-size:16px;color:var(--ink)}
 svg{display:block}
 .num{font-variant-numeric:tabular-nums}
 .hidden{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 .app{
   max-width:560px;margin:0 auto;position:relative;
@@ -598,8 +599,8 @@ function render(){
         <button class="icon-btn" data-a="settings" aria-label="Settings">${I.gear}</button>
         ${S.plants.length ? `<button class="icon-btn accent" data-a="add" aria-label="Add plant">${I.plusLg}</button>` : `<span style="width:44px"></span>`}
       </div>
-      <p class="eyebrow">${esc(eyebrow)}</p>
-      <h1 class="large-title ${titles[UI.tab].length > 8 ? "long" : ""}">${titles[UI.tab]}</h1>
+      ${UI.tab === "plants" ? `<h1 class="sr-only">Plants</h1>` : `<p class="eyebrow">${esc(eyebrow)}</p>
+      <h1 class="large-title ${titles[UI.tab].length > 8 ? "long" : ""}">${titles[UI.tab]}</h1>`}
       <div class="rule"><span></span><i class="sm"></i><i></i><i class="sm"></i><span></span></div>
     </header>
     ${UI.tab === "plants" ? viewPlants() : UI.tab === "list" ? viewList() : viewCalendar()}`;
