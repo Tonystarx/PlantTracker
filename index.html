@@ -266,14 +266,26 @@ svg{display:block}
 .ptable th.r button{justify-content:flex-end}
 .ptable td{padding:0;border-bottom:1px solid var(--line);vertical-align:middle}
 .ptable tr:last-child td{border-bottom:0}
-.ptable td button{display:block;width:100%;min-height:56px;padding:9px 4px;text-align:left}
-.ptable td.r button{text-align:right}
+.cellbtn{display:block;width:100%;min-height:52px;padding:9px 4px;text-align:left;border-radius:8px}
+.ptable td.r .cellbtn{text-align:right}
+.cellbtn:active{background:var(--soft)}
+.cellbtn.sub{min-height:0;padding:0 4px 9px;margin-top:-6px;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cellbtn.add{display:flex;align-items:center;gap:6px;color:var(--accent);font-weight:600;min-height:50px}
+.cellbtn .ph{color:color-mix(in srgb,var(--muted) 55%,transparent);font-style:italic}
+.cell-slot.editing{padding:6px 2px;position:relative;z-index:2}
+.cell-in{display:block;width:100%;min-height:40px;background:var(--bg);border:1.5px solid var(--accent);border-radius:8px;padding:0 8px;font-size:16px;color:var(--ink)}
+.cell-in:focus{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.cell-in.num{text-align:right;font-variant-numeric:tabular-nums}
+.cell-in.sub{min-height:34px;font-size:16px}
+.cell-in.date{min-width:132px;-webkit-appearance:none;appearance:none;line-height:38px}
+.cell-clear{margin-top:6px;min-height:30px;padding:0 10px;border-radius:8px;background:var(--soft);font-size:13px;font-weight:600;color:var(--muted)}
+.ptable tr.addrow td{border-bottom:0}
 .ptable .pn{font-family:var(--display);font-weight:600;font-size:18px;line-height:1.15;overflow-wrap:anywhere}
 .ptable .pr{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ptable .dim{color:var(--muted)}
 .ptable .late{color:var(--burgundy-ink)}
 .ptable .due{color:var(--amber)}
-.ptable tr:active td{background:var(--soft)}
+
 .field{display:grid;gap:8px;margin-bottom:16px}
 .field label,.field .lbl{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .field .opt{text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:400;font-size:13px}
@@ -389,7 +401,7 @@ let S = load() || blank();
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
 
 let T = todayKey();
-const UI = { listSort: { key: "name", dir: 1 }, tab: "plants", calMode: "month", month: T.slice(0,7), week: weekStartOf(T), sheet: null, pop: null };
+const UI = { cellEdit: null, listSort: { key: "name", dir: 1 }, tab: "plants", calMode: "month", month: T.slice(0,7), week: weekStartOf(T), sheet: null, pop: null };
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -622,24 +634,89 @@ function viewList(){
     const w = water(p);
     const wtxt = w.since === null ? `<span class="dim">–</span>` : w.since === 0 ? "Today" : `${w.since}d ago`;
     const wcls = w.doneToday ? "" : w.state === "over" ? "late" : w.state === "today" ? "due" : "";
-    const sub = p.room ? esc(p.room) : "";
-    const open = `data-a="open-plant" data-id="${p.id}"`;
     return `<tr>
-      <td><button ${open}><span class="pn">${esc(p.name)}</span>${sub ? `<span class="pr">${sub}</span>` : ""}</button></td>
-      <td><button ${open} class="num">${p.adopted ? shortDate(p.adopted) : `<span class="dim">–</span>`}</button></td>
-      <td class="r"><button ${open} class="num">${p.every}d</button></td>
-      <td class="r"><button ${open} class="num ${wcls}">${wtxt}</button></td></tr>`;
+      <td>${cellView(p, "name")}${cellView(p, "room")}</td>
+      <td>${cellView(p, "adopted")}</td>
+      <td class="r">${cellView(p, "every")}</td>
+      <td class="r"><button class="cellbtn num ${wcls}" data-a="open-plant" data-id="${p.id}" aria-label="Open ${esc(p.name)}">${wtxt}</button></td></tr>`;
   }).join("");
+  const rooms = [...new Set(S.plants.map(p => p.room).filter(Boolean))].sort();
   return `
     <div class="list-wrap"><div class="list-in">
       <table class="ptable">
         <colgroup><col style="width:39%"><col style="width:24%"><col style="width:15%"><col style="width:22%"></colgroup>
         <thead><tr>${th("name", "Plant")}${th("adopted", "Adopted")}${th("every", "Water", "r")}${th("watered", "Last", "r")}</tr></thead>
-        <tbody>${body}</tbody>
+        <tbody>${body}<tr class="addrow"><td colspan="4">${cellView(null, "name")}</td></tr></tbody>
       </table>
+      <datalist id="listRooms">${rooms.map(r => `<option value="${esc(r)}">`).join("")}</datalist>
     </div></div>
-    <p class="footnote">Tap a column to sort. Tap a plant to see or edit its details, including its adoption date.</p>`;
+    <p class="footnote">Tap a name, room, adoption date, or watering interval to edit it. Tap Last to open the plant. Tap a column heading to sort.</p>`;
 }
+
+/* ----- Inline cell editing for the All list ----- */
+// Display state of one editable cell. p = null is the "Add plant" row.
+function cellView(p, fld){
+  const id = p ? p.id : "new", attrs = `data-a="cell" data-id="${id}" data-f="${fld}"`;
+  let inner;
+  if (!p) inner = `<button class="cellbtn add" ${attrs}>${I.plus}Add plant</button>`;
+  else if (fld === "name") inner = `<button class="cellbtn" ${attrs} aria-label="Edit name of ${esc(p.name)}"><span class="pn">${esc(p.name)}</span></button>`;
+  else if (fld === "room") inner = `<button class="cellbtn sub" ${attrs} aria-label="Edit room of ${esc(p.name)}">${p.room ? esc(p.room) : `<span class="ph">Add room</span>`}</button>`;
+  else if (fld === "adopted") inner = `<button class="cellbtn num" ${attrs} aria-label="Edit adoption date of ${esc(p.name)}">${p.adopted ? shortDate(p.adopted) : `<span class="ph">Add</span>`}</button>`;
+  else inner = `<button class="cellbtn num" ${attrs} aria-label="Edit watering interval of ${esc(p.name)}">${p.every}d</button>`;
+  return `<div class="cell-slot" data-cell="${id}:${fld}">${inner}</div>`;
+}
+// Editing state of one cell
+function cellEditor(p, fld){
+  const id = p ? p.id : "new";
+  let inp;
+  if (fld === "name") inp = `<input class="cell-in" data-edit="1" maxlength="60" enterkeyhint="done" autocomplete="off" placeholder="Plant name" value="${p ? esc(p.name) : ""}" aria-label="Plant name">`;
+  else if (fld === "room") inp = `<input class="cell-in sub" data-edit="1" maxlength="40" enterkeyhint="done" autocomplete="off" list="listRooms" placeholder="Room" value="${esc(p.room || "")}" aria-label="Room">`;
+  else if (fld === "adopted") inp = `<input class="cell-in date" data-edit="1" type="date" max="${T}" value="${esc(p.adopted || "")}" aria-label="Adoption date">
+      <button class="cell-clear" type="button" data-a="cell-clear">Clear</button>`;
+  else inp = `<input class="cell-in num" data-edit="1" type="number" inputmode="numeric" min="1" max="365" enterkeyhint="done" value="${p.every}" aria-label="Water every how many days">`;
+  return `<div class="cell-slot editing" data-cell="${id}:${fld}">${inp}</div>`;
+}
+function startCell(el){
+  const id = el.dataset.id, fld = el.dataset.f, p = id === "new" ? null : byId(id);
+  if (id !== "new" && !p) return;
+  const slot = el.closest(".cell-slot");
+  UI.cellEdit = { id, f: fld };
+  slot.outerHTML = cellEditor(p, fld);
+  const inp = app.querySelector(`.cell-slot[data-cell="${id}:${fld}"] .cell-in`);
+  if (!inp) return;
+  inp.focus();
+  if (fld === "adopted") { try { inp.showPicker && inp.showPicker(); } catch(e){} }
+  else if (inp.select) inp.select();
+}
+function commitCell(inp){
+  const ce = UI.cellEdit; if (!ce) return;
+  UI.cellEdit = null;
+  const slot = inp.closest(".cell-slot"), cancel = inp.dataset.cancel === "1";
+  const v = String(inp.value).trim();
+  if (ce.id === "new") {
+    if (cancel || !v) { if (slot) slot.outerHTML = cellView(null, "name"); return; }
+    S.plants.push({ id: uid(), name: v.slice(0, 60), room: "", adopted: "", notes: "", every: 7, fert: null, created: T });
+    save(); render(); snack(`Added “${v.slice(0, 60)}”`);
+    return;
+  }
+  const p = byId(ce.id); if (!p) return;
+  if (!cancel) {
+    if (ce.f === "name" && v) p.name = v.slice(0, 60);
+    if (ce.f === "room") p.room = v.slice(0, 40);
+    if (ce.f === "adopted") p.adopted = isKey(v) && v <= T ? v : "";
+    if (ce.f === "every") { const n = parseInt(v, 10); if (n) p.every = clamp(n, 1, 365); }
+    save();
+  }
+  if (slot) slot.outerHTML = cellView(p, ce.f);
+}
+document.addEventListener("focusout", e => { if (e.target.matches && e.target.matches(".cell-in")) commitCell(e.target); });
+document.addEventListener("keydown", e => {
+  if (!e.target.matches || !e.target.matches(".cell-in")) return;
+  if (e.key === "Enter") { e.preventDefault(); e.target.blur(); }
+  if (e.key === "Escape") { e.target.dataset.cancel = "1"; e.target.blur(); }
+});
+// Keep focus in the date field when its Clear button is pressed, so the clear is saved by the blur that follows.
+document.addEventListener("pointerdown", e => { if (e.target.closest && e.target.closest(".cell-clear")) e.preventDefault(); });
 
 function viewCalendar(){
   if (!S.plants.length) return `<div class="empty">${potArt()}<h3>Nothing to show</h3><p>Add a plant to start filling the calendar.</p><button class="btn" data-a="add">Add a plant</button></div>`;
@@ -940,6 +1017,8 @@ const A = {
   },
   when: el => { UI.sheet.draft.when = el.dataset.v; renderSheet(); },
   "clear-adopted": () => { UI.sheet.draft.adopted = ""; renderSheet(); },
+  cell: el => startCell(el),
+  "cell-clear": el => { const inp = el.parentElement.querySelector(".cell-in"); if (inp) { inp.value = ""; inp.blur(); } },
   lsort: el => { const k = el.dataset.v, s = UI.listSort; if (s.key === k) s.dir = -s.dir; else { s.key = k; s.dir = k === "watered" ? -1 : 1; } render(); },
   "fert-on": () => { const d = UI.sheet.draft; d.fertOn = !d.fertOn; renderSheet(); },
   delete: el => {

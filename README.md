@@ -10,7 +10,7 @@ A plant watering tracker built for iPhone, styled with Art Deco touches and an a
 - Overdue cards turn burgundy, plants due today turn amber, and plants watered today get the gradient frame.
 - Optional fertilizing schedule per plant, shown as a line on the card and logged from the plant's page or the calendar.
 - Tap a plant for its own calendar. Tap any past day to add or remove a watering or feeding. Upcoming due dates are outlined.
-- All tab: a sortable list of every plant with its room, adoption date, watering interval, and when it was last watered.
+- All tab: a sortable list of every plant with its room, adoption date, watering interval, and when it was last watered. Tap a name, room, date, or interval to edit it in place, or use Add plant at the bottom of the list.
 - Optional adoption date for each plant, set when adding or editing it.
 - Calendar tab with a combined month view (plants watered each day, feedings, and projected due dates) and a week grid.
 - Days end at midnight Eastern.
