@@ -120,6 +120,7 @@ svg{display:block}
 .prow{display:flex;align-items:flex-start;gap:10px;position:relative;z-index:1}
 .prow.top .badge{margin-top:4px;flex:none}
 .prow.bottom{align-items:center;margin-top:2px}
+.prow.bottom .check-wrap{margin:8px 3px 0 0}
 .title-btn{flex:1;min-width:0;text-align:left;display:block}
 .badge{display:inline-flex;align-items:center;min-height:24px;padding:0 11px;font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
   clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,7px 100%,0 50%);background:var(--soft);color:var(--muted)}
@@ -133,10 +134,10 @@ svg{display:block}
 .fertline.over{color:var(--burgundy-ink)}
 .fertline.over svg{color:var(--burgundy-ink)}
 
-.check-wrap{position:relative;flex:none;width:58px;height:58px}
-.check{width:58px;height:58px;clip-path:var(--oct);background:var(--raised);display:grid;place-items:center;position:relative;color:var(--muted)}
+.check-wrap{position:relative;flex:none;width:50px;height:50px}
+.check{width:50px;height:50px;clip-path:var(--oct);background:var(--raised);display:grid;place-items:center;position:relative;color:var(--muted)}
 .check::before{content:"";position:absolute;inset:2px;clip-path:var(--oct);background:var(--surface)}
-.check svg{position:relative;width:26px;height:26px;opacity:.35}
+.check svg{position:relative;width:22px;height:22px;opacity:.35}
 .pcard.over .check{background:var(--burgundy)}
 .pcard.over .check svg{opacity:.6;color:var(--burgundy-ink)}
 .pcard.today .check{background:var(--amber)}
