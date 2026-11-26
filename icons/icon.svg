@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#C04DFF"/>
+      <stop offset=".6" stop-color="#FF3C78"/>
+      <stop offset="1" stop-color="#FF6B35"/>
+    </linearGradient>
+    <linearGradient id="r" x1="0" x2="1">
+      <stop offset="0" stop-color="#2F5BFF"/>
+      <stop offset=".5" stop-color="#C04DFF"/>
+      <stop offset="1" stop-color="#FF3C78"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#0E1130"/>
+  <g stroke="url(#r)" opacity=".55">
+    <line x1="256" y1="300" x2="-120" y2="300" stroke-width="3"/>
+    <line x1="256" y1="300" x2="-90" y2="120" stroke-width="5"/>
+    <line x1="256" y1="300" x2="-10" y2="-40" stroke-width="3"/>
+    <line x1="256" y1="300" x2="110" y2="-120" stroke-width="5"/>
+    <line x1="256" y1="300" x2="256" y2="-140" stroke-width="3"/>
+    <line x1="256" y1="300" x2="402" y2="-120" stroke-width="5"/>
+    <line x1="256" y1="300" x2="522" y2="-40" stroke-width="3"/>
+    <line x1="256" y1="300" x2="602" y2="120" stroke-width="5"/>
+    <line x1="256" y1="300" x2="632" y2="300" stroke-width="3"/>
+    <line x1="256" y1="300" x2="-100" y2="520" stroke-width="3"/>
+    <line x1="256" y1="300" x2="612" y2="520" stroke-width="3"/>
+  </g>
+  <!-- Water droplet -->
+  <path d="M256 70 C256 70 120 222 120 318 a136 136 0 0 0 272 0 C392 222 256 70 256 70 Z" fill="url(#g)"/>
+  <!-- Deco leaf inside -->
+  <path d="M256 426 Q166 336 256 196 Q346 336 256 426 Z" fill="#170A22"/>
+  <path d="M256 410 L256 226" stroke="url(#g)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M256 360 L218 322 M256 306 L226 276 M256 360 L294 322 M256 306 L286 276" stroke="url(#g)" stroke-width="6" stroke-linecap="round"/>
+</svg>

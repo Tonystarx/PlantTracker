@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plants">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#0E1130">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Plant Tracker</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1130;
+  --surface:#181C44;
+  --soft:#232857;
+  --raised:#323872;
+  --ink:#F5F2FF;
+  --muted:#A4A8D4;
+  --line:#2D3366;
+  --accent:#FF3C78;
+  --accent-ink:#170A22;
+  --teal:#00CED1;
+  --magenta:#C04DFF;
+  --coral:#FF6B35;
+  --danger:#FF6B6B;
+  --burgundy:#A3214A;
+  --burgundy-ink:#FF9DB9;
+  --amber:#FFB23E;
+  --grad:linear-gradient(90deg,#2F5BFF 0%,#C04DFF 38%,#FF3C78 68%,#FF6B35 100%);
+  --grad-v:linear-gradient(180deg,#C04DFF 0%,#FF3C78 60%,#FF6B35 100%);
+  --display:"Barlow Semi Condensed","SF Pro Display",-apple-system,system-ui,sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,"Segoe UI",Roboto,sans-serif;
+  --oct:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);
+  --ch:12px;
+  --chamfer:polygon(var(--ch) 0,calc(100% - var(--ch)) 0,100% var(--ch),100% calc(100% - var(--ch)),calc(100% - var(--ch)) 100%,var(--ch) 100%,0 calc(100% - var(--ch)),0 var(--ch));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%;margin:0;overflow-x:hidden;overflow-x:clip;overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;
+  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;
+  overscroll-behavior-y:none;
+}
+body.locked{overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+button:disabled{cursor:default}
+input,textarea{font:inherit;font-size:16px;color:var(--ink)}
+svg{display:block}
+.num{font-variant-numeric:tabular-nums}
+.hidden{display:none!important}
+
+.app{
+  max-width:560px;margin:0 auto;position:relative;
+  padding:calc(env(safe-area-inset-top) + 8px) max(16px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 110px) max(16px,env(safe-area-inset-left));
+  display:flex;flex-direction:column;gap:18px;
+}
+
+/* ---------- Header with Art Deco sunburst ---------- */
+.hero{position:relative;padding-top:4px;isolation:isolate}
+.sunburst{position:absolute;left:50%;top:-30px;width:560px;max-width:none;transform:translateX(-50%);z-index:-1;opacity:.5;pointer-events:none;
+  -webkit-mask-image:linear-gradient(180deg,#000 10%,transparent 92%);mask-image:linear-gradient(180deg,#000 10%,transparent 92%)}
+.topbar{display:flex;align-items:center;justify-content:space-between;min-height:44px;gap:8px}
+.icon-btn{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;color:var(--muted)}
+.icon-btn:active{background:var(--soft)}
+.icon-btn.accent{color:var(--accent)}
+.text-btn{min-height:44px;padding:0 6px;color:var(--accent);font-weight:600}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);text-align:center;margin:6px 0 2px}
+.large-title{font-family:var(--display);font-weight:700;font-size:46px;line-height:1;letter-spacing:.14em;text-transform:uppercase;text-align:center;margin:0;
+  padding-left:.14em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.rule{display:flex;align-items:center;gap:10px;margin:12px auto 0;max-width:280px}
+.rule span{flex:1;height:5px;border-top:1px solid var(--raised);border-bottom:1px solid var(--raised)}
+.rule i{width:9px;height:9px;transform:rotate(45deg);background:var(--accent);box-shadow:0 0 10px color-mix(in srgb,var(--accent) 60%,transparent);flex:none}
+.rule i.sm{width:5px;height:5px;background:var(--magenta);box-shadow:none}
+
+/* ---------- Today progress ---------- */
+.progress{display:flex;flex-direction:column;gap:8px}
+.progress-label{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.progress-label b{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:.04em}
+.progress-label span{color:var(--muted);font-size:14px;text-align:right}
+.progress-label span.late{color:var(--burgundy-ink)}
+.segs{display:flex;gap:3px;height:10px}
+.segs i{flex:1;background:var(--soft);clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%)}
+.segs i.on{background:var(--grad);background-size:var(--segw) 100%;background-position:var(--segx) 0}
+.segs i.late{background:color-mix(in srgb,var(--burgundy) 70%,var(--soft))}
+
+.section-head{display:flex;align-items:center;gap:10px;margin:4px 0 -6px}
+.section-head h2{font-family:var(--display);font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin:0;white-space:nowrap}
+.section-head::after{content:"";flex:1;height:5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+
+/* ---------- Plant cards (chamfered Deco frame) ---------- */
+.cards{display:grid;gap:12px}
+.pcard{position:relative;padding:1px;clip-path:var(--chamfer);background:var(--line)}
+.pcard.done{background:var(--grad)}
+.pcard.today{background:var(--amber)}
+.pcard.over{background:var(--burgundy);padding:1.5px}
+.pcard-in{--ch:11px;clip-path:var(--chamfer);background:var(--surface);display:flex;align-items:center;gap:12px;padding:14px 14px 14px 18px;min-height:96px;position:relative;overflow:hidden}
+.pcard.done .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--surface) 70%)}
+.pcard.over .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--burgundy) 22%,var(--surface)),var(--surface) 75%)}
+.pcard.today .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--amber) 9%,var(--surface)),var(--surface) 70%)}
+.pcard-in::before{content:"";position:absolute;left:7px;top:50%;width:5px;height:5px;transform:translateY(-50%) rotate(45deg);background:var(--raised);z-index:1}
+.pcard.done .pcard-in::before{background:var(--accent)}
+.pcard.today .pcard-in::before{background:var(--amber)}
+.pcard.over .pcard-in::before{background:var(--burgundy-ink)}
+.pcard-in>.card-main,.pcard-in>.check-wrap{position:relative;z-index:1}
+.card-main{flex:1;min-width:0;text-align:left;display:block;padding:2px 0}
+.card-title{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.15;overflow-wrap:anywhere}
+.since{color:var(--muted);font-size:15px;margin-top:2px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.since b{font-family:var(--display);font-size:24px;line-height:1;color:var(--ink);font-weight:700;letter-spacing:.02em}
+.since svg{width:14px;height:14px;align-self:center;color:var(--accent);flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:8px}
+.badge{display:inline-flex;align-items:center;min-height:24px;padding:0 11px;font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;
+  clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,7px 100%,0 50%);background:var(--soft);color:var(--muted)}
+.badge.over{background:var(--burgundy);color:#fff}
+.badge.today{background:var(--amber);color:var(--accent-ink)}
+.badge.next{background:color-mix(in srgb,var(--accent) 24%,var(--soft));color:var(--ink)}
+.room{display:inline-flex;gap:4px;align-items:center;color:var(--muted);font-size:13.5px;min-width:0}
+.room svg{width:13px;height:13px;flex:none}
+.fertline{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:7px}
+.fertline svg{width:14px;height:14px;color:var(--teal);flex:none}
+.fertline.due{color:var(--amber)}
+.fertline.due svg{color:var(--amber)}
+.fertline.over{color:var(--burgundy-ink)}
+.fertline.over svg{color:var(--burgundy-ink)}
+
+.check-wrap{position:relative;flex:none;width:58px;height:58px}
+.check{width:58px;height:58px;clip-path:var(--oct);background:var(--raised);display:grid;place-items:center;position:relative;color:var(--muted)}
+.check::before{content:"";position:absolute;inset:2px;clip-path:var(--oct);background:var(--surface)}
+.check svg{position:relative;width:26px;height:26px;opacity:.35}
+.pcard.over .check{background:var(--burgundy)}
+.pcard.over .check svg{opacity:.6;color:var(--burgundy-ink)}
+.pcard.today .check{background:var(--amber)}
+.pcard.today .check svg{opacity:.7;color:var(--amber)}
+.check:active{transform:scale(.94)}
+.check.on,.pcard .check.on{background:var(--grad-v);color:var(--accent-ink)}
+.check.on::before{display:none}
+.check.on svg{opacity:1;color:var(--accent-ink)}
+.check.pop{animation:pop .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.14)}100%{transform:scale(1)}}
+.burst{position:absolute;inset:-14px;pointer-events:none}
+.burst i{position:absolute;left:50%;top:50%;width:3px;height:12px;margin:-6px 0 0 -1.5px;background:var(--accent);border-radius:2px;opacity:0;
+  transform:rotate(var(--r)) translateY(-30px)}
+.burst.go i{animation:ray .55s ease-out forwards}
+.burst i:nth-child(even){background:var(--teal);height:8px}
+@keyframes ray{0%{opacity:1;transform:rotate(var(--r)) translateY(-24px) scaleY(.4)}100%{opacity:0;transform:rotate(var(--r)) translateY(-44px) scaleY(1)}}
+
+/* Art Deco palm fan and tide motif on plant cards */
+.motif{position:absolute;pointer-events:none;z-index:0;fill:none;stroke:var(--raised);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.motif .lobe{fill:var(--surface)}
+.pcard.done .motif{stroke:color-mix(in srgb,var(--accent) 55%,var(--raised))}
+.pcard.done .motif .lobe{fill:color-mix(in srgb,var(--accent) 4%,var(--surface))}
+.pcard.over .motif{stroke:color-mix(in srgb,var(--burgundy) 70%,var(--raised))}
+.pcard.over .motif .lobe{fill:color-mix(in srgb,var(--burgundy) 8%,var(--surface))}
+.pcard.today .motif{stroke:color-mix(in srgb,var(--amber) 35%,var(--raised))}
+.motif.fan{width:96px;left:calc(100% - 178px + var(--px,.5) * 28px);opacity:.45;bottom:calc(14px + var(--py,0) * 8px);
+  transform:translateX(var(--cx,0px)) scale(var(--ps,1)) scaleX(var(--pf,1));transform-origin:50% 100%;will-change:transform}
+.motif.waves{left:0;right:0;bottom:0;height:18px;width:100%;opacity:.85}
+.pcard.done .motif.waves{stroke:color-mix(in srgb,var(--teal) 55%,var(--raised))}
+
+.ghost{display:flex;align-items:center;justify-content:center;gap:8px;min-height:62px;color:var(--accent);font-weight:600;width:100%;
+  border:1.5px dashed var(--line);clip-path:var(--chamfer);background:transparent}
+.ghost:active{background:var(--soft)}
+.footnote{color:var(--muted);font-size:13px;text-align:center;margin:0}
+
+/* Empty state */
+.empty{text-align:center;padding:18px 8px 6px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.empty svg{width:150px;height:auto}
+.empty h3{font-family:var(--display);font-size:26px;letter-spacing:.08em;text-transform:uppercase;margin:0}
+.empty p{color:var(--muted);margin:0;max-width:30ch}
+.btn{min-height:48px;padding:0 22px;font-weight:700;font-family:var(--display);font-size:18px;letter-spacing:.1em;text-transform:uppercase;
+  clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%);background:var(--accent);color:var(--accent-ink)}
+.btn:active{filter:brightness(.9)}
+.btn.secondary{background:var(--soft);color:var(--ink)}
+.btn.danger{background:var(--danger);color:var(--accent-ink)}
+.btn.block{width:100%}
+
+/* ---------- Segmented control & nav ---------- */
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;min-height:38px;border-radius:9px;font-family:var(--display);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button svg{width:15px;height:15px}
+.seg button[aria-pressed="true"]{background:var(--raised);color:var(--ink)}
+.sheet .seg{background:var(--bg);margin-bottom:10px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nav h3{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:.06em;margin:0;text-align:center;flex:1}
+.today-link{color:var(--accent);font-weight:600;font-size:14px;min-height:44px;padding:0 4px}
+
+/* ---------- Month calendar ---------- */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .dow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.12em;color:var(--muted);text-align:center;padding-bottom:4px}
+.day{--ch:7px;aspect-ratio:1/1.08;clip-path:var(--chamfer);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;min-width:0}
+.day .d{font-family:var(--display);font-weight:600;font-size:17px;line-height:1}
+.day .f{font-size:10.5px;color:var(--muted);line-height:1;display:flex;align-items:center;gap:2px}
+.day .f svg{width:9px;height:9px}
+.day.l1{background:color-mix(in srgb,var(--accent) 22%,var(--surface))}
+.day.l2{background:color-mix(in srgb,var(--accent) 42%,var(--surface))}
+.day.l3{background:color-mix(in srgb,var(--accent) 66%,var(--surface))}
+.day.l3 .f,.day.l2 .f{color:var(--ink)}
+.day.l4{background:var(--grad-v);color:var(--accent-ink)}
+.day.l4 .f{color:var(--accent-ink);font-weight:600}
+.day .fd{position:absolute;top:5px;right:6px;width:6px;height:6px;transform:rotate(45deg);background:var(--teal);box-shadow:0 0 0 1.5px var(--bg)}
+.day.future{background:color-mix(in srgb,var(--surface) 45%,transparent);color:color-mix(in srgb,var(--muted) 55%,transparent)}
+.day.proj{background:color-mix(in srgb,var(--amber) 10%,var(--surface));color:var(--ink);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--amber) 70%,transparent)}
+.day.proj .f{color:var(--amber);font-weight:600}
+.day.pad{visibility:hidden}
+.day.today::after{content:"";position:absolute;left:28%;right:28%;bottom:3px;height:3px;border-radius:2px;background:var(--teal);box-shadow:0 0 0 1.5px var(--bg)}
+.legend{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px;flex-wrap:wrap}
+.legend .key{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.legend .key span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:14px;height:14px;clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px);background:var(--surface)}
+.sw.w{background:var(--grad-v)}
+.sw.p{background:color-mix(in srgb,var(--amber) 25%,var(--surface));box-shadow:inset 0 0 0 1.5px var(--amber)}
+.sw.fz{width:8px;height:8px;clip-path:none;transform:rotate(45deg);background:var(--teal)}
+.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+
+/* ---------- Week view ---------- */
+.week{display:grid;grid-template-columns:minmax(84px,1.6fr) repeat(7,1fr);gap:6px 4px;align-items:center}
+.week .wh{font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.1em;color:var(--muted);text-align:center;line-height:1.15}
+.week .wh b{display:block;font-size:17px;color:var(--ink);letter-spacing:0}
+.week .wh.today b{color:var(--teal)}
+.week .wn{font-family:var(--display);font-weight:600;font-size:16px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.cell{width:100%;max-width:40px;aspect-ratio:1;margin:0 auto;clip-path:var(--oct);background:var(--raised);position:relative;display:grid;place-items:center;color:transparent}
+.cell::before{content:"";position:absolute;inset:1.5px;clip-path:var(--oct);background:var(--bg)}
+.cell svg{position:relative;width:60%;height:60%}
+.cell.s1{background:var(--grad-v);color:var(--accent-ink)}
+.cell.s1::before{display:none}
+.cell .fd{position:absolute;right:16%;top:16%;width:6px;height:6px;transform:rotate(45deg);background:var(--teal)}
+.cell.na{background:transparent}
+.cell.na::before{background:transparent}
+.cell.pj{background:var(--amber);opacity:.75}
+.cell.pj::before{background:var(--bg)}
+.week .tot{font-family:var(--display);font-weight:700;font-size:15px;text-align:center;color:var(--muted)}
+.week .totl{font-family:var(--display);font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.week .sep{grid-column:1/-1;height:5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+
+/* ---------- Tab bar ---------- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:0 max(10px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(10px,env(safe-area-inset-left));
+  background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.tabbar::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--grad);opacity:.8}
+.tabbar-in{max-width:560px;margin:0 auto;display:flex}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;color:var(--muted);font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.18em;text-transform:uppercase}
+.tab svg{width:24px;height:24px}
+.tab[aria-current="page"]{color:var(--accent)}
+
+/* ---------- Sheets ---------- */
+.overlay{position:fixed;inset:0;z-index:40;background:rgba(5,6,22,.62);display:flex;align-items:flex-end;justify-content:center;animation:fade .18s ease}
+.sheet{width:100%;max-width:560px;max-height:90vh;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;position:relative;
+  padding:10px max(18px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 22px) max(18px,env(safe-area-inset-left));animation:up .24s cubic-bezier(.2,.9,.3,1)}
+.sheet::before{content:"";position:absolute;left:22px;right:22px;top:0;height:2px;background:var(--grad)}
+.grabber{width:38px;height:5px;border-radius:3px;background:var(--raised);margin:8px auto 6px}
+.sheet-head{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px}
+.sheet-head h3{flex:1;font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:.04em;margin:6px 0 0;line-height:1.1;overflow-wrap:anywhere}
+.sheet-sub{color:var(--muted);font-size:14px;margin:-6px 0 14px;display:flex;gap:6px;align-items:center}
+.sheet-sub svg{width:14px;height:14px}
+.field{display:grid;gap:8px;margin-bottom:16px}
+.field label,.field .lbl{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.field .opt{text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:400;font-size:13px}
+.text-input{width:100%;min-height:52px;padding:0 14px;background:var(--bg);border:1px solid var(--line);border-radius:12px;display:block}
+textarea.text-input{min-height:84px;padding:12px 14px;resize:vertical;line-height:1.4}
+input[type="date"].text-input{-webkit-appearance:none;appearance:none;text-align:left;line-height:50px}
+.text-input:focus{outline:none;border-color:var(--accent)}
+.stack{display:grid;gap:12px}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:48px;height:48px;border-radius:12px;background:var(--soft);display:grid;place-items:center;flex:none}
+.stepper button:active{background:var(--raised)}
+.stepper input{width:76px;text-align:center;min-height:48px;background:var(--bg);border:1px solid var(--line);border-radius:12px;font-family:var(--display);font-size:24px;font-weight:700}
+.stepper input:focus{outline:none;border-color:var(--accent)}
+.stepper span{color:var(--muted);margin-left:2px}
+.choice{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.choice button{min-height:40px;padding:0 4px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-weight:600;font-size:14.5px;color:var(--muted)}
+.choice button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.ms{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.ms b{display:block;font-family:var(--display);font-size:26px;line-height:1.05;white-space:nowrap}
+.ms b.over{color:var(--burgundy-ink)}
+.ms b.today{color:var(--amber)}
+.ms span{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-family:var(--display);font-weight:600}
+.hint{color:var(--muted);font-size:13.5px;margin:8px 0 0}
+.notes{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;margin-bottom:14px}
+.cal.small .day{aspect-ratio:1}
+.cal.small .day .d{font-size:15px}
+.sheet .day{background:var(--bg)}
+.sheet .day.w{background:var(--grad-v);color:var(--accent-ink)}
+.sheet .day.future{background:color-mix(in srgb,var(--bg) 45%,transparent)}
+.sheet .day.proj{background:color-mix(in srgb,var(--amber) 12%,var(--bg))}
+.sheet .mode-f .day.w{background:color-mix(in srgb,var(--accent) 28%,var(--bg));color:var(--ink)}
+.sheet .mode-f .day.fz{background:color-mix(in srgb,var(--teal) 45%,var(--bg));color:var(--ink)}
+.sheet .mode-f .day.fz .fd{background:var(--ink)}
+.row-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row-item:last-child{border-bottom:0}
+.row-item .nm{flex:1;min-width:0;font-family:var(--display);font-weight:600;font-size:19px;overflow-wrap:anywhere}
+.row-item .nm small{display:block;font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted)}
+.pills{display:flex;gap:6px;flex:none}
+.pills button{min-width:70px;min-height:38px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;padding:0 10px}
+.pills button svg{width:14px;height:14px}
+.pills button[aria-pressed="true"].pw{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pills button[aria-pressed="true"].pf{background:var(--teal);border-color:var(--teal);color:var(--accent-ink)}
+.chip-btn{min-height:36px;padding:0 12px;border-radius:10px;background:var(--soft);font-size:14px;font-weight:600}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.list-btn{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:54px;padding:0 14px;background:var(--bg);border:1px solid var(--line);border-radius:12px;text-align:left;font-weight:500}
+.list-btn small{color:var(--muted);font-size:13px;font-weight:400;display:block}
+.list-btn.warn{color:var(--danger)}
+.list-btn.confirm{background:var(--danger);color:var(--accent-ink);border-color:var(--danger)}
+.list-btn.confirm small{color:var(--accent-ink)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 14px;margin-bottom:10px}
+.toggle-row small{display:block;color:var(--muted);font-size:13px}
+.switch{width:52px;height:32px;border-radius:16px;background:var(--line);position:relative;flex:none;transition:background .18s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch.teal[aria-checked="true"]{background:var(--teal)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+
+/* ---------- Celebration toast ---------- */
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 14px);z-index:60;transform:translateX(-50%);width:min(92vw,420px);pointer-events:none;animation:drop .5s cubic-bezier(.2,1.3,.4,1)}
+.toast-frame{padding:1px;clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,16px 100%,0 50%);background:var(--grad)}
+.toast-in{clip-path:polygon(15px 0,calc(100% - 15px) 0,100% 50%,calc(100% - 15px) 100%,15px 100%,0 50%);background:var(--surface);padding:14px 34px;text-align:center}
+.toast .t{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:.16em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-left:.16em}
+.toast .s{color:var(--muted);font-size:14px;margin-top:2px}
+.toast.out{animation:lift .35s ease forwards}
+.confetti{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 50px);z-index:59;pointer-events:none}
+.confetti i{position:absolute;width:8px;height:8px;transform:rotate(45deg);animation:fly 1.1s cubic-bezier(.15,.7,.4,1) forwards}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) rotate(45deg) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(225deg) scale(.6)}}
+@keyframes drop{0%{opacity:0;transform:translate(-50%,-30px) scale(.9)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes lift{to{opacity:0;transform:translate(-50%,-20px)}}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.snack{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translateX(-50%);z-index:55;background:var(--raised);color:var(--ink);padding:10px 16px;border-radius:12px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:fade .2s;white-space:nowrap}
+.haptic-src{position:fixed;left:-100px;top:-100px;opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<nav class="tabbar" aria-label="Sections"><div class="tabbar-in" id="tabs"></div></nav>
+<div id="sheet-root"></div>
+<div id="toast-root"></div>
+<label class="haptic-src" aria-hidden="true"><input type="checkbox" switch id="hapticInput" tabindex="-1"></label>
+<input type="file" id="importFile" accept="application/json,.json" class="hidden">
+
+<script>
+"use strict";
+/* ===================== Dates (days end at midnight Eastern) ===================== */
+const TZ = "America/New_York";
+const keyFmt = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" });
+function todayKey(){ return keyFmt.format(new Date()); }
+function k2d(k){ const [y,m,d] = k.split("-").map(Number); return new Date(Date.UTC(y, m-1, d)); }
+function d2k(dt){ return dt.toISOString().slice(0,10); }
+function addDays(k, n){ const dt = k2d(k); dt.setUTCDate(dt.getUTCDate() + n); return d2k(dt); }
+function dow(k){ return k2d(k).getUTCDay(); }
+function weekStartOf(k){ return addDays(k, -dow(k)); }
+function daysInMonth(ym){ const [y,m] = ym.split("-").map(Number); return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+function addMonths(ym, n){ const [y,m] = ym.split("-").map(Number); const dt = new Date(Date.UTC(y, m-1+n, 1)); return dt.toISOString().slice(0,7); }
+const f = (k, o) => new Intl.DateTimeFormat("en-US", Object.assign({ timeZone: "UTC" }, o)).format(k2d(k));
+function diffDays(a, b){ return Math.round((k2d(b) - k2d(a)) / 864e5); }
+const isKey = k => typeof k === "string" && /^\d{4}-\d{2}-\d{2}$/.test(k);
+
+/* ===================== State ===================== */
+// plants: [{ id, name, room, notes, every (days), fert (days or null), created, fan }]
+// log:    { plantId: { "YYYY-MM-DD": bits } }   bit 1 = watered, bit 2 = fertilized
+const LS_KEY = "plant-tracker-v1";
+const WATER = 1, FERT = 2;
+function valid(s){ return s && Array.isArray(s.plants) && s.log && typeof s.log === "object"; }
+function load(){ try { const s = JSON.parse(localStorage.getItem(LS_KEY)); return valid(s) ? s : null; } catch(e){ return null; } }
+function save(){ try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e){} }
+const blank = () => ({ v: 1, plants: [], log: {} });
+let S = load() || blank();
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
+
+let T = todayKey();
+const UI = { tab: "plants", calMode: "month", month: T.slice(0,7), week: weekStartOf(T), sheet: null, pop: null };
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const byId = id => S.plants.find(p => p.id === id);
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+
+/* ===================== Log helpers ===================== */
+function bits(p, k){ return (S.log[p.id] || {})[k] || 0; }
+function has(p, k, b){ return (bits(p, k) & b) !== 0; }
+function setBit(p, k, b, on){
+  if (!isKey(k) || k > T) return;
+  const L = S.log[p.id] || (S.log[p.id] = {});
+  const v = on ? (L[k] || 0) | b : (L[k] || 0) & ~b;
+  if (v) L[k] = v; else delete L[k];
+  if (on && (!p.created || k < p.created)) p.created = k;
+  save();
+}
+function datesOf(p, b){ return Object.keys(S.log[p.id] || {}).filter(k => has(p, k, b) && k <= T).sort(); }
+function lastOf(p, b, before){
+  let m = null;
+  for (const k of Object.keys(S.log[p.id] || {})) if (has(p, k, b) && k <= T && (!before || k < before) && (!m || k > m)) m = k;
+  return m;
+}
+
+/* Status for one schedule (water or fertilizer).
+   since: days since last log (null if never). dueIn: days until next due (negative = overdue). */
+function sched(p, b){
+  const every = b === WATER ? p.every : p.fert;
+  const last = lastOf(p, b);
+  if (!last) return { last: null, since: null, due: null, dueIn: null, every, state: "never", doneToday: false };
+  const since = diffDays(last, T), due = addDays(last, every), dueIn = diffDays(T, due);
+  const doneToday = last === T;
+  const state = doneToday ? "done" : dueIn < 0 ? "over" : dueIn === 0 ? "today" : "ok";
+  return { last, since, due, dueIn, every, state, doneToday };
+}
+const water = p => sched(p, WATER);
+const fert = p => p.fert ? sched(p, FERT) : null;
+
+// Order: plants never logged first, then by days until next watering (most overdue first), then name.
+function sortKey(p){ const w = water(p); return w.state === "never" ? -1e6 : w.dueIn; }
+function sortedPlants(){
+  return S.plants.slice().sort((a, b) => sortKey(a) - sortKey(b) || a.name.localeCompare(b.name));
+}
+
+// Projected due dates from today forward, assuming each watering happens on its due date.
+function projected(p, b, from, to){
+  const s = sched(p, b), every = s.every, out = [];
+  if (!every || !s.last) return out;
+  let d = s.due < T ? T : s.due;
+  if (s.doneToday) d = s.due;
+  for (let guard = 0; d <= to && guard < 400; guard++, d = addDays(d, every)) if (d >= from && d > T) out.push(d);
+  return out;
+}
+
+// Today's progress: plants that were due by today (based on waterings before today) plus any watered today.
+function progress(){
+  const set = [];
+  let need = 0, over = 0;
+  for (const p of sortedPlants()) {
+    const prev = lastOf(p, WATER, T), wt = has(p, T, WATER);
+    const wasDue = prev ? addDays(prev, p.every) <= T : false;
+    if (wasDue || wt) set.push({ p, on: wt, late: !wt && prev && addDays(prev, p.every) < T });
+    const w = water(p);
+    if (w.state === "over") { need++; over++; } else if (w.state === "today") need++;
+  }
+  return { set, done: set.filter(x => x.on).length, total: set.length, need, over };
+}
+
+/* ===================== Icons ===================== */
+const I = {
+  check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  drop: '<svg viewBox="0 0 16 16"><path d="M8 1.2C8 1.2 3 6.6 3 10a5 5 0 0 0 10 0C13 6.6 8 1.2 8 1.2z" fill="currentColor"/></svg>',
+  leaf: '<svg viewBox="0 0 16 16"><path d="M14 2C7 2 2.5 5.5 2.5 10.5c0 1.2.3 2.3.8 3.2C4.5 9.6 7.5 7.2 11 6c-3 1.6-5.4 4.2-6.6 7.8.9.5 1.9.7 3 .7C12 14.5 14 9 14 2z" fill="currentColor"/></svg>',
+  pin: '<svg viewBox="0 0 16 16"><path d="M8 1.5a4.8 4.8 0 0 0-4.8 4.8C3.2 10 8 14.5 8 14.5s4.8-4.5 4.8-8.2A4.8 4.8 0 0 0 8 1.5zm0 6.6a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z" fill="currentColor"/></svg>',
+  gear: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3 1a7.4 7.4 0 0 0-2.6-1.5L14 2.6h-4l-.5 2.5a7.4 7.4 0 0 0-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-1a7.4 7.4 0 0 0 2.6 1.5l.5 2.5h4l.5-2.5a7.4 7.4 0 0 0 2.6-1.5l2.3 1 2-3.4z" stroke-linejoin="round"/></svg>',
+  plus: '<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  plusLg: '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 4.5v15M4.5 12h15" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  minus: '<svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  left: '<svg width="22" height="22" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  right: '<svg width="22" height="22" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  close: '<svg width="22" height="22" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  tPlants: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 15h10l-1.4 6.5H8.4z"/><path d="M12 15V6.5"/><path d="M12 10C12 6 9 3.5 5 3.5c0 4 3 6.5 7 6.5zM12 12.5c0-3.4 2.6-5.6 6-5.6 0 3.4-2.6 5.6-6 5.6z"/></svg>',
+  tCal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7 13.5h2M11 13.5h2M15 13.5h2M7 17h2M11 17h2" stroke-linecap="round"/></svg>'
+};
+
+// Art Deco palm fan: five pointed leaves with midribs, rising from a stepped base.
+const FAN = (() => {
+  const cx = 60, base = 58; let p = "";
+  for (const [a, len] of [[-64, 38], [-32, 48], [0, 54], [32, 48], [64, 38]]) {
+    const w = len * 0.2, tip = base - len;
+    p += `<g transform="rotate(${a} ${cx} ${base})"><path class="lobe" d="M${cx} ${base} Q${cx - w} ${base - len * .55} ${cx} ${tip} Q${cx + w} ${base - len * .55} ${cx} ${base}Z"/><path d="M${cx} ${base - 3} L${cx} ${tip + 6}"/></g>`;
+  }
+  p += `<path d="M14 ${base}H106M28 ${base + 4}H92"/>`;
+  return `<svg class="motif fan" viewBox="0 0 120 64" aria-hidden="true">${p}</svg>`;
+})();
+const waves = id => `<svg class="motif waves" aria-hidden="true"><defs><pattern id="wv-${id}" width="40" height="18" patternUnits="userSpaceOnUse"><path d="M0 5Q10 -1 20 5T40 5M0 10Q10 4 20 10T40 10M0 15Q10 9 20 15T40 15"/></pattern></defs><rect width="100%" height="100%" fill="url(#wv-${id})" stroke="none"/></svg>`;
+
+function sunburst(){
+  let rays = "";
+  const n = 22;
+  for (let i = 0; i <= n; i++) {
+    const a = Math.PI + Math.PI * i / n;
+    const x = 280 + Math.cos(a) * 330, y = 250 + Math.sin(a) * 330;
+    rays += `<line x1="280" y1="250" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="url(#sg)" stroke-width="${i % 2 ? 1 : 2.2}"/>`;
+  }
+  const arcs = [70, 110, 150].map(r => `<path d="M${280 - r} 250 A${r} ${r} 0 0 1 ${280 + r} 250" fill="none" stroke="url(#sg)" stroke-width="1" opacity=".7"/>`).join("");
+  return `<svg class="sunburst" viewBox="0 0 560 250" aria-hidden="true"><defs><linearGradient id="sg" x1="0" x2="1"><stop offset="0" stop-color="#2F5BFF"/><stop offset=".4" stop-color="#C04DFF"/><stop offset=".7" stop-color="#FF3C78"/><stop offset="1" stop-color="#FF6B35"/></linearGradient></defs>${rays}${arcs}</svg>`;
+}
+// Empty-state art: a Deco potted palm under a half sunburst
+function potArt(){
+  let rays = "";
+  for (let i = 0; i < 9; i++) { const a = Math.PI + Math.PI * (i + .5) / 9; rays += `<line x1="75" y1="62" x2="${(75 + Math.cos(a) * 66).toFixed(1)}" y2="${(62 + Math.sin(a) * 66).toFixed(1)}" stroke="#323872" stroke-width="1.5"/>`; }
+  let leaves = "";
+  for (const [a, len] of [[-58, 34], [-28, 42], [0, 46], [28, 42], [58, 34]]) {
+    const w = len * .22;
+    leaves += `<path transform="rotate(${a} 75 62)" d="M75 62Q${75 - w} ${62 - len * .55} 75 ${62 - len}Q${75 + w} ${62 - len * .55} 75 62Z" fill="#181C44" stroke="url(#pg)" stroke-width="2"/>`;
+  }
+  return `<svg viewBox="0 0 150 104" aria-hidden="true"><defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#2F5BFF"/><stop offset=".5" stop-color="#FF3C78"/><stop offset="1" stop-color="#FF6B35"/></linearGradient></defs>${rays}${leaves}
+    <path d="M54 62h42l-6 30H60z" fill="#181C44" stroke="url(#pg)" stroke-width="2" stroke-linejoin="round"/><path d="M58 70h34M61 78h28" stroke="#323872" stroke-width="1.5"/>
+    <path d="M10 96h130M22 101h106" stroke="#323872" stroke-width="1.5"/><rect x="71" y="83" width="8" height="8" transform="rotate(45 75 87)" fill="#FF3C78"/></svg>`;
+}
+
+/* ===================== Text helpers ===================== */
+function dueText(n){ return n < 0 ? `Overdue ${plural(-n, "day")}` : n === 0 ? "Due today" : n === 1 ? "Due tomorrow" : `Due in ${n} days`; }
+function nextShort(s){ if (s.state === "never") return "–"; const n = s.dueIn; return n < 0 ? `${-n}d late` : n === 0 ? "Today" : `${n}d`; }
+function sinceHTML(w){
+  if (w.state === "never") return `<div class="since">Not logged yet</div>`;
+  if (w.since === 0) return `<div class="since">${I.drop}<span>Watered today</span></div>`;
+  return `<div class="since"><b class="num">${w.since}</b><span>${w.since === 1 ? "day" : "days"} since watered</span></div>`;
+}
+function badgeHTML(p, w){
+  if (w.state === "never") return `<span class="badge">Every ${plural(p.every, "day")}</span>`;
+  if (w.doneToday) return `<span class="badge next">${p.every === 1 ? "Next tomorrow" : `Next in ${p.every} days`}</span>`;
+  return `<span class="badge ${w.state === "over" ? "over" : w.state === "today" ? "today" : ""}">${dueText(w.dueIn)}</span>`;
+}
+function fertHTML(p){
+  const s = fert(p); if (!s) return "";
+  let txt, cls = "";
+  if (s.state === "never") txt = "Fertilizer not logged yet";
+  else if (s.doneToday) txt = "Fertilized today";
+  else {
+    txt = `Fed ${s.since === 1 ? "yesterday" : `${s.since}d ago`}`;
+    if (s.state === "over") { txt += ` · fertilizer ${-s.dueIn}d overdue`; cls = "over"; }
+    else if (s.state === "today") { txt += " · fertilizer due today"; cls = "due"; }
+    else txt += ` · next feeding in ${s.dueIn}d`;
+  }
+  return `<div class="fertline ${cls}">${I.leaf}<span>${txt}</span></div>`;
+}
+
+/* ===================== Render ===================== */
+const app = document.getElementById("app");
+function render(){
+  const titles = { plants: "Plants", calendar: "Calendar" };
+  const eyebrow = UI.tab === "plants" ? f(T, { weekday: "long", month: "long", day: "numeric" }) : "All plants combined";
+  app.innerHTML = `
+    <header class="hero">
+      ${sunburst()}
+      <div class="topbar">
+        <button class="icon-btn" data-a="settings" aria-label="Settings">${I.gear}</button>
+        ${S.plants.length ? `<button class="icon-btn accent" data-a="add" aria-label="Add plant">${I.plusLg}</button>` : `<span style="width:44px"></span>`}
+      </div>
+      <p class="eyebrow">${esc(eyebrow)}</p>
+      <h1 class="large-title">${titles[UI.tab]}</h1>
+      <div class="rule"><span></span><i class="sm"></i><i></i><i class="sm"></i><span></span></div>
+    </header>
+    ${UI.tab === "plants" ? viewPlants() : viewCalendar()}`;
+  renderTabs();
+  if (fanDirty) { fanDirty = false; save(); }
+  parallax();
+  if (UI.pop) {
+    const w = app.querySelector(`.pcard[data-id="${UI.pop}"]`);
+    if (w) { w.querySelector(".check").classList.add("pop"); w.querySelector(".burst").classList.add("go"); }
+    UI.pop = null;
+  }
+}
+function renderTabs(){
+  const t = [["plants", "Plants", I.tPlants], ["calendar", "Calendar", I.tCal]];
+  document.getElementById("tabs").innerHTML = t.map(([id, label, ic]) =>
+    `<button class="tab" data-a="tab" data-v="${id}" ${UI.tab === id ? 'aria-current="page"' : ""}>${ic}<span>${label}</span></button>`).join("");
+}
+
+function viewPlants(){
+  if (!S.plants.length) return `
+    <div class="empty">${potArt()}
+      <h3>No plants yet</h3>
+      <p>Add a plant and how often it needs water. Tap its checkmark each time you water it.</p>
+      <button class="btn" data-a="add">Add a plant</button>
+      <button class="text-btn" data-a="demo">Load sample data to explore</button>
+    </div>`;
+  const pr = progress();
+  const segs = pr.set.map((x, i) => `<i class="${x.on ? "on" : x.late ? "late" : ""}" style="--segw:${pr.set.length * 100}%;--segx:${pr.set.length > 1 ? (i / (pr.set.length - 1) * 100).toFixed(1) : 0}%"></i>`).join("");
+  const label = !pr.total ? "Nothing due today" : pr.done === pr.total ? "All caught up" : `${pr.done} of ${pr.total} watered`;
+  const sub = pr.need ? `${pr.need} to water${pr.over ? ` · ${pr.over} overdue` : ""}` : pr.total ? "Everything watered" : "Enjoy the day off";
+  return `
+    <section class="progress" aria-label="Today's watering">
+      <div class="progress-label"><b class="num">${label}</b><span class="${pr.over ? "late" : ""}">${sub}</span></div>
+      ${pr.total ? `<div class="segs">${segs}</div>` : ""}
+    </section>
+    <div class="section-head"><h2>Next to water</h2></div>
+    <div class="cards" id="list">${sortedPlants().map(card).join("")}</div>
+    <button class="ghost" data-a="add">${I.plus}Add plant</button>
+    <p class="footnote">Sorted by next watering. Tap a plant for its calendar, fertilizer, and edits.</p>`;
+}
+// Each plant gets its own palm-fan placement, picked at random once and saved with the plant.
+let fanDirty = false;
+function fanVars(p){
+  if (!p.fan) {
+    p.fan = { x: +Math.random().toFixed(3), y: +Math.random().toFixed(3), s: +(0.85 + Math.random() * 0.3).toFixed(3), f: Math.random() < .5 ? -1 : 1 };
+    fanDirty = true;
+  }
+  const c = p.fan;
+  return `--px:${c.x};--py:${c.y};--ps:${c.s};--pf:${c.f}`;
+}
+function card(p){
+  const w = water(p);
+  const cls = w.doneToday ? "done" : w.state === "over" ? "over" : w.state === "today" ? "today" : "";
+  const rays = Array.from({ length: 10 }, (_, i) => `<i style="--r:${i * 36}deg"></i>`).join("");
+  return `<div class="pcard ${cls}" data-id="${p.id}">
+    <div class="pcard-in" style="${fanVars(p)}">${FAN}${waves(p.id)}
+      <button class="card-main" data-a="open-plant" data-id="${p.id}">
+        <div class="card-title">${esc(p.name)}</div>
+        ${sinceHTML(w)}
+        <div class="chips">${badgeHTML(p, w)}${p.room ? `<span class="room">${I.pin}${esc(p.room)}</span>` : ""}</div>
+        ${fertHTML(p)}
+      </button>
+      <div class="check-wrap"><span class="burst">${rays}</span>
+        <button class="check ${w.doneToday ? "on" : ""}" data-a="toggle" data-id="${p.id}" role="checkbox" aria-checked="${w.doneToday}" aria-label="Mark ${esc(p.name)} watered today">${I.check}</button></div>
+    </div></div>`;
+}
+
+function viewCalendar(){
+  if (!S.plants.length) return `<div class="empty">${potArt()}<h3>Nothing to show</h3><p>Add a plant to start filling the calendar.</p><button class="btn" data-a="add">Add a plant</button></div>`;
+  const seg = `<div class="seg" role="group" aria-label="Calendar view">
+      <button data-a="calmode" data-v="month" aria-pressed="${UI.calMode === "month"}">Month</button>
+      <button data-a="calmode" data-v="week" aria-pressed="${UI.calMode === "week"}">Week</button></div>`;
+  return seg + (UI.calMode === "month" ? monthView() : weekView());
+}
+function dayCounts(k){
+  let w = 0, fz = 0;
+  for (const p of S.plants) { const b = bits(p, k); if (b & WATER) w++; if (b & FERT) fz++; }
+  return { w, fz };
+}
+function dueOn(from, to){
+  const m = {};
+  for (const p of S.plants) for (const d of projected(p, WATER, from, to)) (m[d] || (m[d] = [])).push(p);
+  return m;
+}
+function level(n){
+  const tot = S.plants.length;
+  if (!n) return 0;
+  const r = n / Math.max(tot, 1);
+  return r >= 1 ? 4 : r > 2/3 ? 3 : r > 1/3 ? 2 : 1;
+}
+function monthView(){
+  const ym = UI.month, first = ym + "-01", nd = daysInMonth(ym), off = dow(first), last = `${ym}-${String(nd).padStart(2,"0")}`;
+  const atNow = ym === T.slice(0,7);
+  const due = dueOn(first, last);
+  let cells = ["S","M","T","W","T","F","S"].map(x => `<div class="dow">${x}</div>`).join("");
+  for (let i = 0; i < off; i++) cells += `<div class="day pad"></div>`;
+  let wTot = 0, fTot = 0; const cared = new Set();
+  for (let d = 1; d <= nd; d++) {
+    const k = `${ym}-${String(d).padStart(2,"0")}`;
+    const lbl = f(k, { month: "long", day: "numeric" });
+    if (k > T) {
+      const n = (due[k] || []).length;
+      cells += n
+        ? `<button class="day proj" data-a="open-day" data-k="${k}" aria-label="${lbl}: ${plural(n, "plant")} due"><span class="d">${d}</span><span class="f num">${n} due</span></button>`
+        : `<div class="day future"><span class="d">${d}</span></div>`;
+      continue;
+    }
+    const c = dayCounts(k);
+    wTot += c.w; fTot += c.fz;
+    for (const p of S.plants) if (bits(p, k)) cared.add(p.id);
+    cells += `<button class="day l${level(c.w)} ${k === T ? "today" : ""}" data-a="open-day" data-k="${k}" aria-label="${lbl}: ${plural(c.w, "plant")} watered${c.fz ? `, ${c.fz} fertilized` : ""}">
+      ${c.fz ? `<i class="fd"></i>` : ""}<span class="d">${d}</span><span class="f num">${c.w ? `${I.drop}${c.w}` : ""}</span></button>`;
+  }
+  return `
+    <div class="nav">
+      <button class="icon-btn" data-a="month" data-v="-1" aria-label="Previous month">${I.left}</button>
+      <h3>${f(first, { month: "long", year: "numeric" })}</h3>
+      <button class="icon-btn" data-a="month" data-v="1" aria-label="Next month">${I.right}</button>
+    </div>
+    <div class="cal">${cells}</div>
+    <div class="legend">
+      <span class="key"><span><i class="sw w"></i>Watered</span><span><i class="sw fz"></i>Fertilized</span><span><i class="sw p"></i>Due</span></span>
+      ${atNow ? "" : `<button class="today-link" data-a="month-now">This month</button>`}
+    </div>
+    <div class="summary-row">${miniTile("Waterings", wTot)}${miniTile("Feedings", fTot)}${miniTile("Plants", cared.size)}</div>
+    <p class="footnote">Numbers show plants watered each day. Future days show plants due, based on each schedule. Tap a day to edit it.</p>`;
+}
+function miniTile(k, v, cls = ""){ return `<div class="ms"><b class="num ${cls}">${v}</b><span>${k}</span></div>`; }
+function weekView(){
+  const ws = UI.week, we = addDays(ws, 6), atNow = ws === weekStartOf(T);
+  const days = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
+  const due = dueOn(ws, we);
+  let g = `<div></div>` + days.map(d => `<div class="wh ${d === T ? "today" : ""}">${f(d, { weekday: "short" }).toUpperCase()}<b class="num">${f(d, { day: "numeric" })}</b></div>`).join("");
+  g += `<div class="sep"></div>`;
+  for (const p of sortedPlants()) {
+    g += `<div class="wn">${esc(p.name)}</div>`;
+    for (const d of days) {
+      if (d > T) { g += (due[d] || []).includes(p) ? `<div class="cell pj" aria-label="${esc(p.name)} due ${f(d,{weekday:"long"})}"></div>` : `<div class="cell na"></div>`; continue; }
+      const b = bits(p, d);
+      g += `<button class="cell ${b & WATER ? "s1" : ""}" data-a="wcell" data-id="${p.id}" data-k="${d}" aria-label="${esc(p.name)}, ${f(d,{weekday:"long"})}: ${b & WATER ? "watered" : "not watered"}">${I.check}${b & FERT ? `<i class="fd"></i>` : ""}</button>`;
+    }
+  }
+  g += `<div class="sep"></div><div class="totl">Total</div>`;
+  for (const d of days) g += d > T ? `<div class="tot">${(due[d] || []).length ? `<span style="color:var(--amber)">${due[d].length}</span>` : "–"}</div>` : `<div class="tot num">${dayCounts(d).w}</div>`;
+  return `
+    <div class="nav">
+      <button class="icon-btn" data-a="week" data-v="-7" aria-label="Previous week">${I.left}</button>
+      <h3>${f(ws, { month: "short", day: "numeric" })} – ${f(we, { month: ws.slice(5,7) === we.slice(5,7) ? undefined : "short", day: "numeric" })}</h3>
+      <button class="icon-btn" data-a="week" data-v="7" aria-label="Next week">${I.right}</button>
+    </div>
+    <div class="week">${g}</div>
+    <div class="legend">
+      <span class="key"><span><i class="sw w"></i>Watered</span><span><i class="sw fz"></i>Fertilized</span><span><i class="sw p"></i>Due</span></span>
+      ${atNow ? "" : `<button class="today-link" data-a="week-now">This week</button>`}
+    </div>
+    <p class="footnote">Tap a past day to add or remove a watering. Tap a day in Month view to log fertilizer.</p>`;
+}
+
+/* ===================== Sheets ===================== */
+const sheetRoot = document.getElementById("sheet-root");
+function openSheet(s){ UI.sheet = s; document.body.classList.add("locked"); renderSheet(); }
+function closeSheet(){ UI.sheet = null; document.body.classList.remove("locked"); sheetRoot.innerHTML = ""; render(); }
+function renderSheet(){
+  const s = UI.sheet; if (!s) { sheetRoot.innerHTML = ""; return; }
+  const prev = sheetRoot.querySelector(".sheet"), scroll = prev ? prev.scrollTop : 0;
+  let body = "";
+  if (s.type === "form") body = formSheet(s);
+  if (s.type === "plant") body = plantSheet(s);
+  if (s.type === "day") body = daySheet(s);
+  if (s.type === "settings") body = settingsSheet(s);
+  sheetRoot.innerHTML = `<div class="overlay" data-a="backdrop"><div class="sheet" role="dialog" aria-modal="true"><div class="grabber"></div>${body}</div></div>`;
+  const sh = sheetRoot.querySelector(".sheet");
+  if (prev) { sh.style.animation = "none"; sh.parentElement.style.animation = "none"; sh.scrollTop = scroll; }
+  if (s.type === "form" && s.focus) { s.focus = false; setTimeout(() => { const i = document.getElementById("fName"); i && i.focus(); }, 60); }
+}
+
+function newDraft(){ return { name: "", every: 7, room: "", notes: "", fertOn: false, fert: 30, when: "unsure", date: addDays(T, -2) }; }
+function editDraft(p){ return { name: p.name, every: p.every, room: p.room || "", notes: p.notes || "", fertOn: !!p.fert, fert: p.fert || 30 }; }
+function stepper(field, val, label){
+  return `<div class="stepper">
+    <button type="button" data-a="step" data-f="${field}" data-v="-1" aria-label="Fewer days">${I.minus}</button>
+    <input class="num" id="f-${field}" data-f="${field}" type="number" inputmode="numeric" min="1" max="365" value="${esc(val)}" aria-label="${label}">
+    <button type="button" data-a="step" data-f="${field}" data-v="1" aria-label="More days">${I.plus}</button>
+    <span>days</span></div>`;
+}
+function formSheet(s){
+  const d = s.draft, isNew = !s.id;
+  const rooms = [...new Set(S.plants.map(p => p.room).filter(Boolean))].sort();
+  const when = [["unsure", "Not sure"], ["today", "Today"], ["yesterday", "Yesterday"], ["earlier", "Earlier"]];
+  return `
+    <div class="sheet-head"><h3>${isNew ? "New plant" : "Edit plant"}</h3><button class="icon-btn" data-a="${isNew ? "close" : "back"}" aria-label="Close">${I.close}</button></div>
+    <form data-form="plant" novalidate>
+      <div class="field"><label for="fName">Name</label>
+        <input class="text-input" id="fName" data-f="name" maxlength="60" placeholder="e.g. Fiddle leaf fig" autocomplete="off" enterkeyhint="done" value="${esc(d.name)}"></div>
+      <div class="field"><span class="lbl">Water every</span>${stepper("every", d.every, "Water every how many days")}</div>
+      <div class="field"><label for="fRoom">Room <span class="opt">(optional)</span></label>
+        <input class="text-input" id="fRoom" data-f="room" maxlength="40" list="roomList" placeholder="e.g. Living room" autocomplete="off" value="${esc(d.room)}">
+        <datalist id="roomList">${rooms.map(r => `<option value="${esc(r)}">`).join("")}</datalist></div>
+      ${isNew ? `<div class="field"><span class="lbl">Last watered</span>
+        <div class="choice" role="group" aria-label="Last watered">${when.map(([v, l]) => `<button type="button" data-a="when" data-v="${v}" aria-pressed="${d.when === v}">${l}</button>`).join("")}</div>
+        ${d.when === "earlier" ? `<input class="text-input" type="date" data-f="date" max="${T}" value="${esc(d.date)}" aria-label="Date last watered">` : ""}</div>` : ""}
+      <div class="toggle-row"><div>Track fertilizing<small>Get a reminder line on the card when it's due</small></div>
+        <button type="button" class="switch teal" role="switch" aria-checked="${d.fertOn}" data-a="fert-on" aria-label="Track fertilizing"></button></div>
+      ${d.fertOn ? `<div class="field"><span class="lbl">Fertilize every</span>${stepper("fert", d.fert, "Fertilize every how many days")}</div>` : ""}
+      <div class="field"><label for="fNotes">Notes <span class="opt">(optional)</span></label>
+        <textarea class="text-input" id="fNotes" data-f="notes" maxlength="500" rows="3" placeholder="Light, soil, care tips">${esc(d.notes)}</textarea></div>
+      <button class="btn block" type="submit">${isNew ? "Add plant" : "Save changes"}</button>
+    </form>`;
+}
+
+function plantSheet(s){
+  const p = byId(s.id); if (!p) return "";
+  const w = water(p), fz = fert(p);
+  const mode = s.mode === "f" && p.fert ? "f" : "w", B = mode === "f" ? FERT : WATER;
+  const ym = s.month, first = ym + "-01", nd = daysInMonth(ym), off = dow(first), last = `${ym}-${String(nd).padStart(2,"0")}`;
+  const proj = new Set(projected(p, B, first, last));
+  let cells = ["S","M","T","W","T","F","S"].map(x => `<div class="dow">${x}</div>`).join("");
+  for (let i = 0; i < off; i++) cells += `<div class="day pad"></div>`;
+  for (let d = 1; d <= nd; d++) {
+    const k = `${ym}-${String(d).padStart(2,"0")}`;
+    if (k > T) { cells += proj.has(k) ? `<div class="day proj" aria-label="Due ${f(k,{month:"long",day:"numeric"})}"><span class="d">${d}</span></div>` : `<div class="day future"><span class="d">${d}</span></div>`; continue; }
+    const b = bits(p, k);
+    cells += `<button class="day ${b & WATER ? "w" : ""} ${b & FERT ? "fz" : ""} ${k === T ? "today" : ""}" data-a="pday" data-id="${p.id}" data-k="${k}" aria-label="${f(k,{month:"long",day:"numeric"})}: ${b & WATER ? "watered" : "not watered"}${b & FERT ? ", fertilized" : ""}">
+      ${b & FERT ? `<i class="fd"></i>` : ""}<span class="d">${d}</span></button>`;
+  }
+  const ws = datesOf(p, WATER);
+  const avg = ws.length > 1 ? (diffDays(ws[0], ws[ws.length - 1]) / (ws.length - 1)) : null;
+  const nextCls = w.state === "over" ? "over" : w.state === "today" ? "today" : "";
+  return `
+    <div class="sheet-head"><h3>${esc(p.name)}</h3><button class="icon-btn" data-a="close" aria-label="Close">${I.close}</button></div>
+    ${p.room ? `<div class="sheet-sub">${I.pin}${esc(p.room)}</div>` : ""}
+    <div class="mini-stats">${miniTile("Days since", w.since === null ? "–" : w.since)}${miniTile("Every", `${p.every}d`)}${miniTile("Next", nextShort(w), nextCls)}</div>
+    <div class="toggle-row"><div>Watered today<small>${w.doneToday ? "Logged" : w.state === "never" ? "No waterings logged yet" : dueText(w.dueIn)}</small></div>
+      <button class="switch" role="switch" aria-checked="${w.doneToday}" data-a="today-bit" data-id="${p.id}" data-b="1" aria-label="Watered today"></button></div>
+    ${fz ? `<div class="toggle-row"><div>Fertilized today<small>${fz.doneToday ? "Logged" : fz.state === "never" ? `Every ${fz.every} days · not logged yet` : `Every ${fz.every} days · ${dueText(fz.dueIn).toLowerCase()}`}</small></div>
+      <button class="switch teal" role="switch" aria-checked="${fz.doneToday}" data-a="today-bit" data-id="${p.id}" data-b="2" aria-label="Fertilized today"></button></div>` : ""}
+    <div class="section-head" style="margin:14px 0 10px"><h2>History</h2></div>
+    ${p.fert || datesOf(p, FERT).length ? `<div class="seg" role="group" aria-label="Calendar edits">
+      <button data-a="pmode" data-v="w" aria-pressed="${mode === "w"}">${I.drop}Water</button>
+      <button data-a="pmode" data-v="f" aria-pressed="${mode === "f"}" ${p.fert ? "" : "disabled style='opacity:.4'"}>${I.leaf}Fertilizer</button></div>` : ""}
+    <div class="nav">
+      <button class="icon-btn" data-a="pmonth" data-v="-1" aria-label="Previous month">${I.left}</button>
+      <h3 style="font-size:20px">${f(first, { month: "long", year: "numeric" })}</h3>
+      <button class="icon-btn" data-a="pmonth" data-v="1" aria-label="Next month">${I.right}</button>
+    </div>
+    <div class="cal small ${mode === "f" ? "mode-f" : ""}">${cells}</div>
+    <p class="hint">Tap a past day to add or remove ${mode === "f" ? "a fertilizer feeding" : "a watering"}. Outlined days are when it's next due.</p>
+    <p class="hint">${ws.length ? `${plural(ws.length, "watering")} logged${avg !== null ? ` · on average every ${Math.round(avg * 10) / 10} days` : ""}${p.fert ? ` · ${plural(datesOf(p, FERT).length, "feeding")}` : ""}` : "No waterings logged yet."}</p>
+    ${p.notes ? `<div class="section-head" style="margin:14px 0 10px"><h2>Notes</h2></div><div class="notes">${esc(p.notes)}</div>` : ""}
+    <div class="actions">
+      <button class="btn secondary" data-a="edit-plant" data-id="${p.id}">Edit</button>
+      <button class="btn ${s.confirmDel ? "danger" : "secondary"}" data-a="delete" data-id="${p.id}" ${s.confirmDel ? "" : "style='color:var(--danger)'"}>${s.confirmDel ? "Tap to confirm" : "Delete"}</button>
+    </div>
+    <p class="hint">Delete removes the plant and its history.</p>`;
+}
+function daySheet(s){
+  const k = s.k, head = `<div class="sheet-head"><h3>${f(k, { weekday: "long", month: "long", day: "numeric" })}</h3><button class="icon-btn" data-a="close" aria-label="Close">${I.close}</button></div>`;
+  if (k > T) {
+    const list = dueOn(k, k)[k] || [];
+    return `${head}<div>${list.map(p => `<div class="row-item"><div class="nm">${esc(p.name)}<small>Every ${plural(p.every, "day")}${p.room ? ` · ${esc(p.room)}` : ""}</small></div></div>`).join("") || `<p class="hint">Nothing due this day.</p>`}</div>
+      <p class="hint">Projected from each plant's last watering and schedule.</p>`;
+  }
+  const c = dayCounts(k);
+  const rows = sortedPlants().map(p => {
+    const b = bits(p, k), showF = p.fert || (b & FERT);
+    return `<div class="row-item"><div class="nm">${esc(p.name)}${p.room ? `<small>${esc(p.room)}</small>` : ""}</div>
+      <div class="pills">
+        <button class="pw" data-a="dset" data-id="${p.id}" data-k="${k}" data-b="1" aria-pressed="${!!(b & WATER)}">${I.drop}Water</button>
+        ${showF ? `<button class="pf" data-a="dset" data-id="${p.id}" data-k="${k}" data-b="2" aria-pressed="${!!(b & FERT)}">${I.leaf}Feed</button>` : ""}
+      </div></div>`;
+  }).join("");
+  return `${head}
+    <div class="mini-stats">${miniTile("Watered", c.w)}${miniTile("Fertilized", c.fz)}${miniTile("Plants", S.plants.length)}</div>
+    <div>${rows}</div>
+    <p class="hint">Tap to add or remove a log for this day.</p>`;
+}
+function settingsSheet(s){
+  return `
+    <div class="sheet-head"><h3>Settings</h3><button class="icon-btn" data-a="close" aria-label="Close">${I.close}</button></div>
+    <div class="stack">
+      <div class="section-head" style="margin:0"><h2>Backup</h2></div>
+      <button class="list-btn" data-a="export"><span>Export data<small>Save a JSON backup (Files, AirDrop, email)</small></span>${I.right}</button>
+      <button class="list-btn" data-a="import"><span>Import data<small>Replace everything with a backup file</small></span>${I.right}</button>
+      <div class="section-head" style="margin:6px 0 0"><h2>Testing</h2></div>
+      <button class="list-btn" data-a="demo"><span>Load sample data<small>Replaces your plants with six examples</small></span>${I.right}</button>
+      <button class="list-btn ${s.confirmErase ? "confirm" : "warn"}" data-a="erase"><span>${s.confirmErase ? "Tap again to erase everything" : "Erase all data"}<small>Removes every plant and log on this device</small></span>${I.right}</button>
+      <p class="hint" style="margin:0">Data lives on this device only. Export a backup now and then. Days end at midnight Eastern.</p>
+    </div>`;
+}
+
+/* ===================== Feedback ===================== */
+const hapticInput = document.getElementById("hapticInput");
+function haptic(){
+  try {
+    if (navigator.vibrate) { navigator.vibrate(12); return; }
+    hapticInput.parentElement.click();   // iOS Safari: toggling a switch-style checkbox gives a light tap
+  } catch(e){}
+}
+let toastTimer;
+function celebrate(title, sub){
+  const root = document.getElementById("toast-root");
+  const colors = ["#FF3C78", "#C04DFF", "#FF6B35", "#00CED1", "#2F5BFF"];
+  const bitsHTML = Array.from({ length: 22 }, (_, i) => {
+    const a = Math.PI * (i / 21), r = 90 + Math.random() * 90;
+    return `<i style="background:${colors[i % 5]};--x:${(Math.cos(a) * r * (Math.random() > .5 ? 1 : -1)).toFixed(0)}px;--y:${(Math.sin(a) * r * .9 + 40).toFixed(0)}px;animation-delay:${(Math.random() * .12).toFixed(2)}s"></i>`;
+  }).join("");
+  root.innerHTML = `<div class="confetti">${bitsHTML}</div><div class="toast" role="status"><div class="toast-frame"><div class="toast-in"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div></div></div>`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { const t = root.querySelector(".toast"); if (t) t.classList.add("out"); setTimeout(() => root.innerHTML = "", 380); }, 2600);
+}
+function snack(msg){
+  document.querySelectorAll(".snack").forEach(e => e.remove());
+  const el = document.createElement("div"); el.className = "snack"; el.textContent = msg; document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2200);
+}
+
+/* ===================== Actions ===================== */
+function setToday(p, b, on){
+  const before = progress();
+  setBit(p, T, b, on);
+  if (!on) { snack(b === WATER ? `Removed today's watering for ${p.name}` : `Removed today's feeding for ${p.name}`); return; }
+  haptic();
+  if (b === WATER) {
+    UI.pop = p.id;
+    const after = progress();
+    if (after.total > 1 && after.done === after.total && before.done < before.total) celebrate("All caught up", "Every plant due today is watered");
+  }
+}
+const A = {
+  tab: el => { UI.tab = el.dataset.v; render(); window.scrollTo(0, 0); },
+  toggle: el => { const p = byId(el.dataset.id); if (!p) return; setToday(p, WATER, !has(p, T, WATER)); render(); },
+  add: () => openSheet({ type: "form", draft: newDraft(), focus: true }),
+  "open-plant": el => openSheet({ type: "plant", id: el.dataset.id, month: T.slice(0,7), mode: "w" }),
+  "open-day": el => openSheet({ type: "day", k: el.dataset.k }),
+  settings: () => openSheet({ type: "settings" }),
+  close: () => closeSheet(),
+  back: () => { const s = UI.sheet; s && s.id && byId(s.id) ? openSheet(s.ret || { type: "plant", id: s.id, month: T.slice(0,7), mode: "w" }) : closeSheet(); },
+  backdrop: (el, e) => { if (e.target === el) closeSheet(); },
+  calmode: el => { UI.calMode = el.dataset.v; render(); },
+  month: el => { UI.month = addMonths(UI.month, +el.dataset.v); render(); },
+  "month-now": () => { UI.month = T.slice(0,7); render(); },
+  week: el => { UI.week = addDays(UI.week, +el.dataset.v); render(); },
+  "week-now": () => { UI.week = weekStartOf(T); render(); },
+  pmonth: el => { UI.sheet.month = addMonths(UI.sheet.month, +el.dataset.v); renderSheet(); },
+  pmode: el => { UI.sheet.mode = el.dataset.v; renderSheet(); },
+  pday: el => {
+    const p = byId(el.dataset.id), k = el.dataset.k; if (!p || k > T) return;
+    const b = UI.sheet.mode === "f" && p.fert ? FERT : WATER;
+    const on = !has(p, k, b); setBit(p, k, b, on); if (on) haptic();
+    renderSheet(); render();
+  },
+  "today-bit": el => { const p = byId(el.dataset.id); if (!p) return; const b = +el.dataset.b; setToday(p, b, !has(p, T, b)); renderSheet(); render(); },
+  wcell: el => { const p = byId(el.dataset.id), k = el.dataset.k; if (!p || k > T) return; const on = !has(p, k, WATER); setBit(p, k, WATER, on); if (on) haptic(); render(); },
+  dset: el => { const p = byId(el.dataset.id); if (!p) return; const b = +el.dataset.b, k = el.dataset.k; const on = !has(p, k, b); setBit(p, k, b, on); if (on) haptic(); renderSheet(); render(); },
+  "edit-plant": el => { const p = byId(el.dataset.id); if (!p) return; openSheet({ type: "form", id: p.id, draft: editDraft(p), ret: Object.assign({}, UI.sheet, { confirmDel: false }) }); },
+  step: el => {
+    const s = UI.sheet, fld = el.dataset.f; if (!s || !s.draft) return;
+    const cur = parseInt(s.draft[fld], 10) || (fld === "fert" ? 30 : 7);
+    s.draft[fld] = clamp(cur + +el.dataset.v, 1, 365);
+    const inp = document.getElementById("f-" + fld); if (inp) inp.value = s.draft[fld];
+  },
+  when: el => { UI.sheet.draft.when = el.dataset.v; renderSheet(); },
+  "fert-on": () => { const d = UI.sheet.draft; d.fertOn = !d.fertOn; renderSheet(); },
+  delete: el => {
+    if (!UI.sheet.confirmDel) { UI.sheet.confirmDel = true; renderSheet(); return; }
+    const id = el.dataset.id, p = byId(id);
+    S.plants = S.plants.filter(x => x.id !== id); delete S.log[id]; save(); closeSheet(); snack(`Deleted “${p ? p.name : "plant"}”`);
+  },
+  erase: () => {
+    if (!UI.sheet.confirmErase) { UI.sheet.confirmErase = true; renderSheet(); return; }
+    S = blank(); save(); closeSheet(); snack("All data erased");
+  },
+  export: async () => {
+    const json = JSON.stringify(S, null, 2), name = `plants-${T}.json`;
+    try {
+      const file = new File([json], name, { type: "application/json" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "Plant backup" }); return; }
+    } catch(e){ if (e && e.name === "AbortError") return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([json], { type: "application/json" })); a.download = name;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  },
+  import: () => document.getElementById("importFile").click(),
+  demo: () => { S = demoData(); save(); UI.tab = "plants"; UI.sheet ? closeSheet() : render(); snack("Sample data loaded"); }
+};
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-a]"); if (!el || el.disabled) return;
+  const fn = A[el.dataset.a]; if (fn) { if (el.closest("form") && el.type !== "submit") e.preventDefault(); fn(el, e); }
+});
+// Keep the add/edit form's typed values in the draft so re-renders don't lose them.
+document.addEventListener("input", e => {
+  const fld = e.target.dataset && e.target.dataset.f;
+  if (fld && UI.sheet && UI.sheet.draft) UI.sheet.draft[fld] = e.target.value;
+});
+document.addEventListener("submit", e => {
+  if (e.target.dataset.form !== "plant") return;
+  e.preventDefault();
+  const s = UI.sheet, d = s.draft;
+  const name = String(d.name).trim();
+  if (!name) { const i = document.getElementById("fName"); i.focus(); snack("Give the plant a name"); return; }
+  const every = clamp(parseInt(d.every, 10) || 7, 1, 365);
+  const fertDays = d.fertOn ? clamp(parseInt(d.fert, 10) || 30, 1, 365) : null;
+  const room = String(d.room).trim().slice(0, 40), notes = String(d.notes).trim().slice(0, 500);
+  if (!s.id) {
+    const p = { id: uid(), name, room, notes, every, fert: fertDays, created: T };
+    S.plants.push(p);
+    const k = d.when === "today" ? T : d.when === "yesterday" ? addDays(T, -1) : d.when === "earlier" && isKey(d.date) && d.date <= T ? d.date : null;
+    if (k) setBit(p, k, WATER, true); else save();
+    UI.tab = "plants"; closeSheet(); snack(`Added “${name}”`);
+  } else {
+    const p = byId(s.id); if (!p) { closeSheet(); return; }
+    Object.assign(p, { name, room, notes, every, fert: fertDays }); save();
+    openSheet(s.ret || { type: "plant", id: p.id, month: T.slice(0,7), mode: "w" }); render(); snack("Changes saved");
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && UI.sheet) closeSheet();
+});
+document.getElementById("importFile").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!valid(data)) throw new Error("bad");
+    if (!confirm(`Replace your current data with ${data.plants.length} plant(s) from this backup?`)) return;
+    S = data; save(); closeSheet(); snack("Backup imported");
+  } catch(err){ snack("That file isn't a plant backup"); }
+});
+
+/* ===================== Sample data (testing only) ===================== */
+function demoData(){
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  // [name, room, every, days since last watering (null = never), fertilize every, days since last feeding, notes]
+  const defs = [
+    ["Fiddle leaf fig", "Living room", 7, 9, 30, 20, "Bright indirect light. Rotate a quarter turn each week."],
+    ["Monstera", "Living room", 5, 5, 28, 31, ""],
+    ["Basil", "Kitchen", 2, 0, null, null, "Pinch flowers off."],
+    ["Snake plant", "Bedroom", 14, 12, null, null, "Let soil dry out fully."],
+    ["Pothos", "Office", 6, 2, null, null, ""],
+    ["Calathea", "Bathroom", 4, null, null, null, "Filtered water only."]
+  ];
+  const plants = [], log = {};
+  defs.forEach(([name, room, every, last, fertEvery, fertLast, notes], i) => {
+    const id = "demo" + i, L = log[id] = {};
+    if (last !== null) {
+      for (let d = addDays(T, -last), n = 0; diffDays(d, T) < 80 && n < 40; n++) {
+        L[d] = (L[d] || 0) | WATER;
+        d = addDays(d, -(every + Math.floor(rnd() * 3) - 1));
+      }
+    }
+    if (fertEvery) for (let d = addDays(T, -fertLast); diffDays(d, T) < 80; d = addDays(d, -fertEvery)) L[d] = (L[d] || 0) | FERT;
+    const keys = Object.keys(L).sort();
+    plants.push({ id, name, room, notes, every, fert: fertEvery, created: keys[0] || T });
+  });
+  return { v: 1, plants, log };
+}
+
+/* ===================== Fan drift on scroll ===================== */
+const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+let parRaf = 0;
+function parallax(){
+  parRaf = 0;
+  if (calm.matches) return;
+  const half = window.innerHeight / 2;
+  for (const c of app.querySelectorAll(".pcard")) {
+    const r = c.getBoundingClientRect();
+    const d = Math.max(-1, Math.min(1, (r.top + r.height / 2 - half) / half));
+    c.style.setProperty("--cx", (d * 14).toFixed(1) + "px");
+  }
+}
+const queueParallax = () => { if (!parRaf) parRaf = requestAnimationFrame(parallax); };
+window.addEventListener("scroll", queueParallax, { passive: true });
+window.addEventListener("resize", queueParallax);
+
+/* ===================== Day rollover & boot ===================== */
+function checkDay(){ const k = todayKey(); if (k !== T) { T = k; UI.week = weekStartOf(T); UI.month = T.slice(0,7); render(); if (UI.sheet && UI.sheet.type !== "form") renderSheet(); } }
+setInterval(checkDay, 30000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) checkDay(); });
+render();
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
