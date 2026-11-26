@@ -131,6 +131,13 @@ svg{display:block}
 .badge.over{background:var(--burgundy);color:#fff}
 .badge.today{background:var(--amber);color:var(--accent-ink)}
 .badge.next{background:color-mix(in srgb,var(--accent) 24%,var(--soft));color:var(--ink)}
+.nn-row{display:flex;justify-content:flex-end;margin-top:8px;position:relative;z-index:1}
+.nn{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px;border-radius:10px;background:var(--soft);border:1px solid var(--raised);font-size:13.5px;font-weight:600;color:var(--ink)}
+.nn svg{width:13px;height:13px;color:var(--muted)}
+.nn:active{background:var(--raised)}
+.nn.on{background:color-mix(in srgb,var(--accent) 16%,var(--soft));border-color:var(--accent)}
+.nn.on svg{color:var(--accent)}
+.sheet .day.ck{box-shadow:inset 0 0 0 1.5px var(--muted)}
 .nextline{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:8px}
 .nextline svg{width:14px;height:14px;color:var(--accent);flex:none}
 .nextline.due{color:var(--amber)}
@@ -403,9 +410,9 @@ const isKey = k => typeof k === "string" && /^\d{4}-\d{2}-\d{2}$/.test(k);
 
 /* ===================== State ===================== */
 // plants: [{ id, name, adopted (YYYY-MM-DD or ""), notes, every (days), fert (days or null), created }]
-// log:    { plantId: { "YYYY-MM-DD": bits } }   bit 1 = watered, bit 2 = fertilized
+// log:    { plantId: { "YYYY-MM-DD": bits } }   bit 1 = watered, bit 2 = fertilized, bit 4 = checked, not needed
 const LS_KEY = "plant-tracker-v1";
-const WATER = 1, FERT = 2;
+const WATER = 1, FERT = 2, CHECK = 4;   // CHECK = checked, water not needed
 function valid(s){ return s && Array.isArray(s.plants) && s.log && typeof s.log === "object"; }
 function load(){ try { const s = JSON.parse(localStorage.getItem(LS_KEY)); return valid(s) ? s : null; } catch(e){ return null; } }
 function save(){ try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e){} }
@@ -449,7 +456,11 @@ function sched(p, b){
   if (!last) return { last: null, since: null, due: null, dueIn: null, every, state: "never", doneToday: false };
   const since = diffDays(last, T), doneToday = last === T;
   if (!every) return { last, since, due: null, dueIn: null, every: null, state: doneToday ? "done" : "none", doneToday };   // no check interval set
-  const due = addDays(last, every), dueIn = diffDays(T, due);
+  let due = addDays(last, every);
+  // "Checked, not needed" after the last watering pushes the next check to at least the following day.
+  const lastCheck = b === WATER ? lastOf(p, CHECK) : null;
+  if (lastCheck && lastCheck > last) { const after = addDays(lastCheck, 1); if (after > due) due = after; }
+  const dueIn = diffDays(T, due);
   const state = doneToday ? "done" : dueIn < 0 ? "over" : dueIn === 0 ? "today" : "ok";
   return { last, since, due, dueIn, every, state, doneToday };
 }
@@ -483,9 +494,9 @@ function progress(){
   const set = [];
   let need = 0, over = 0;
   for (const p of sortedPlants()) {
-    const prev = lastOf(p, WATER, T), wt = has(p, T, WATER);
+    const prev = lastOf(p, WATER, T), wt = has(p, T, WATER), ck = has(p, T, CHECK);
     const wasDue = prev && p.every ? addDays(prev, p.every) <= T : false;
-    if (wasDue || wt) set.push({ p, on: wt, late: !wt && wasDue && addDays(prev, p.every) < T });
+    if (wasDue || wt) set.push({ p, on: wt || ck, late: !wt && !ck && wasDue && addDays(prev, p.every) < T });
     const w = water(p);
     if (w.state === "over") { need++; over++; } else if (w.state === "today") need++;
   }
@@ -614,8 +625,8 @@ function viewPlants(){
     </div>`;
   const pr = progress();
   const segs = pr.set.map((x, i) => `<i class="${x.on ? "on" : x.late ? "late" : ""}" style="--segw:${pr.set.length * 100}%;--segx:${pr.set.length > 1 ? (i / (pr.set.length - 1) * 100).toFixed(1) : 0}%"></i>`).join("");
-  const label = !pr.total ? "Nothing due today" : pr.done === pr.total ? "All caught up" : `${pr.done} of ${pr.total} watered`;
-  const sub = pr.need ? `${pr.need} to water${pr.over ? ` · ${pr.over} overdue` : ""}` : pr.total ? "Everything watered" : "Enjoy the day off";
+  const label = !pr.total ? "Nothing due today" : pr.done === pr.total ? "All caught up" : `${pr.done} of ${pr.total} done`;
+  const sub = pr.need ? `${pr.need} to water${pr.over ? ` · ${pr.over} overdue` : ""}` : pr.total ? "Everything checked" : "Enjoy the day off";
   return `
     <section class="progress" aria-label="Today's watering">
       <div class="progress-label"><b class="num">${label}</b><span class="${pr.over ? "late" : ""}">${sub}</span></div>
@@ -637,7 +648,15 @@ function card(p){
         <div class="check-wrap"><span class="burst">${rays}</span>
           <button class="check ${w.doneToday ? "on" : ""}" data-a="toggle" data-id="${p.id}" role="checkbox" aria-checked="${w.doneToday}" aria-label="Mark ${esc(p.name)} watered today">${I.check}</button></div>
       </div>
+      ${notNeededHTML(p, w)}
     </div></div>`;
+}
+// "Checked, Not Needed": shown when a check is due or overdue, or when it was used today (tap again to undo).
+function notNeededHTML(p, w){
+  const ck = has(p, T, CHECK);
+  if (w.doneToday || !p.every || w.state === "never") return "";
+  if (!ck && w.state !== "over" && w.state !== "today") return "";
+  return `<div class="nn-row"><button class="nn ${ck ? "on" : ""}" data-a="not-needed" data-id="${p.id}" aria-pressed="${ck}">${ck ? I.check : I.drop}<span>Checked, Not Needed</span></button></div>`;
 }
 
 const shortDate = k => f(k, { month: "numeric", day: "numeric", year: "2-digit" });
@@ -894,7 +913,7 @@ function plantSheet(s){
     const k = `${ym}-${String(d).padStart(2,"0")}`;
     if (k > T) { cells += proj.has(k) ? `<div class="day proj" aria-label="Due ${f(k,{month:"long",day:"numeric"})}"><span class="d">${d}</span></div>` : `<div class="day future"><span class="d">${d}</span></div>`; continue; }
     const b = bits(p, k);
-    cells += `<button class="day ${b & WATER ? "w" : ""} ${b & FERT ? "fz" : ""} ${k === T ? "today" : ""}" data-a="pday" data-id="${p.id}" data-k="${k}" aria-label="${f(k,{month:"long",day:"numeric"})}: ${b & WATER ? "watered" : "not watered"}${b & FERT ? ", fertilized" : ""}">
+    cells += `<button class="day ${b & WATER ? "w" : ""} ${b & FERT ? "fz" : ""} ${b & CHECK && !(b & WATER) ? "ck" : ""} ${k === T ? "today" : ""}" data-a="pday" data-id="${p.id}" data-k="${k}" aria-label="${f(k,{month:"long",day:"numeric"})}: ${b & WATER ? "watered" : b & CHECK ? "checked, not needed" : "not watered"}${b & FERT ? ", fertilized" : ""}">
       ${b & FERT ? `<i class="fd"></i>` : ""}<span class="d">${d}</span></button>`;
   }
   const ws = datesOf(p, WATER);
@@ -1000,6 +1019,19 @@ function setToday(p, b, on){
 const A = {
   tab: el => { UI.tab = el.dataset.v; render(); window.scrollTo(0, 0); },
   toggle: el => { const p = byId(el.dataset.id); if (!p) return; setToday(p, WATER, !has(p, T, WATER)); render(); },
+  "not-needed": el => {
+    const p = byId(el.dataset.id); if (!p) return;
+    const on = !has(p, T, CHECK), before = progress();
+    setBit(p, T, CHECK, on);
+    if (on) {
+      haptic();
+      const w = water(p);
+      snack(w.due ? `Next check moved to ${f(w.due, { weekday: "short", month: "short", day: "numeric" })}` : "Checked");
+      const after = progress();
+      if (after.total > 1 && after.done === after.total && before.done < before.total) celebrate("All caught up", "Every plant due today is handled");
+    } else snack("Check undone");
+    render();
+  },
   add: () => openSheet({ type: "form", draft: newDraft(), focus: true }),
   "open-plant": el => openSheet({ type: "plant", id: el.dataset.id, month: T.slice(0,7), mode: "w" }),
   "open-day": el => openSheet({ type: "day", k: el.dataset.k }),
