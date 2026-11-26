@@ -107,14 +107,14 @@ svg{display:block}
 .pcard.done .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--surface) 70%)}
 .pcard.over .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--burgundy) 22%,var(--surface)),var(--surface) 75%)}
 .pcard.today .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--amber) 9%,var(--surface)),var(--surface) 70%)}
-.pcard-in::before{content:"";position:absolute;left:7px;top:50%;width:5px;height:5px;transform:translateY(-50%) rotate(45deg);background:var(--raised);z-index:1}
+.pcard-in::before{content:"";position:absolute;left:7px;top:28px;width:5px;height:5px;transform:translateY(-50%) rotate(45deg);background:var(--raised);z-index:1}
 .pcard.done .pcard-in::before{background:var(--accent)}
 .pcard.today .pcard-in::before{background:var(--amber)}
 .pcard.over .pcard-in::before{background:var(--burgundy-ink)}
 
-.card-main{flex:1;min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:stretch;padding:2px 0 4px 62px}
-.card-title{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.15;overflow-wrap:anywhere}
-.since{color:var(--muted);font-size:15px;margin-top:6px;display:flex;align-items:baseline;justify-content:center;gap:7px;flex-wrap:wrap}
+.card-main{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;align-items:stretch;justify-content:center;align-self:stretch;padding:2px 0 4px}
+.card-title{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.15;overflow-wrap:anywhere;text-align:center;padding-left:62px}
+.since{color:var(--muted);font-size:15px;margin-top:6px;display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
 .since b{font-family:var(--display);font-size:44px;line-height:.9;color:var(--ink);font-weight:700;letter-spacing:.02em}
 .since svg{width:14px;height:14px;align-self:center;color:var(--accent);flex:none}
 .prow{display:flex;align-items:center;gap:12px;position:relative;z-index:1;min-height:66px}
@@ -127,7 +127,7 @@ svg{display:block}
 .badge.over{background:var(--burgundy);color:#fff}
 .badge.today{background:var(--amber);color:var(--accent-ink)}
 .badge.next{background:color-mix(in srgb,var(--accent) 24%,var(--soft));color:var(--ink)}
-.fertline{display:flex;gap:6px;align-items:center;justify-content:center;font-size:13.5px;color:var(--muted);margin-top:8px;text-align:center}
+.fertline{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:8px}
 .fertline svg{width:14px;height:14px;color:var(--teal);flex:none}
 .fertline.due{color:var(--amber)}
 .fertline.due svg{color:var(--amber)}
