@@ -90,8 +90,8 @@ svg{display:block}
 .progress-label b{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:.04em}
 .progress-label span{color:var(--muted);font-size:14px;text-align:right}
 .progress-label span.late{color:var(--burgundy-ink)}
-.segs{display:flex;gap:3px;height:10px}
-.segs i{flex:1;background:var(--soft);clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%)}
+.segs{display:flex;gap:4px;height:16px;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2728%27 height=%2716%27 viewBox=%270 0 28 16%27%3E%3Cpath d=%27M0 5Q7 0 14 5T28 5M0 11Q7 6 14 11T28 11%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.6%27 stroke-linecap=%27round%27/%3E%3C/svg%3E") 0 50%/28px 16px repeat-x;mask:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2728%27 height=%2716%27 viewBox=%270 0 28 16%27%3E%3Cpath d=%27M0 5Q7 0 14 5T28 5M0 11Q7 6 14 11T28 11%27 fill=%27none%27 stroke=%27%23000%27 stroke-width=%272.6%27 stroke-linecap=%27round%27/%3E%3C/svg%3E") 0 50%/28px 16px repeat-x}
+.segs i{flex:1;background:var(--raised)}
 .segs i.on{background:var(--grad);background-size:var(--segw) 100%;background-position:var(--segx) 0}
 .segs i.late{background:color-mix(in srgb,var(--burgundy) 70%,var(--soft))}
 
