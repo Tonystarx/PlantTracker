@@ -577,7 +577,7 @@ function render(){
   }
 }
 function renderTabs(){
-  const t = [["plants", "Plants", I.tPlants], ["list", "All", I.tList], ["calendar", "Calendar", I.tCal]];
+  const t = [["plants", "Plants", I.tPlants], ["calendar", "Calendar", I.tCal], ["list", "All", I.tList]];
   document.getElementById("tabs").innerHTML = t.map(([id, label, ic]) =>
     `<button class="tab" data-a="tab" data-v="${id}" ${UI.tab === id ? 'aria-current="page"' : ""}>${ic}<span>${label}</span></button>`).join("");
 }
