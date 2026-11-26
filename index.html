@@ -260,7 +260,7 @@ svg{display:block}
 .list-in{--ch:11px;clip-path:var(--chamfer);background:var(--surface);padding:6px 12px 4px}
 .ptable{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}
 .ptable th{padding:0;border-bottom:1px solid var(--line)}
-.ptable th button{display:flex;align-items:center;gap:3px;width:100%;min-height:42px;padding:0 4px;font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ptable th button{display:flex;align-items:center;gap:3px;width:100%;min-height:42px;padding:0 4px;font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .ptable th button[aria-sort]{color:var(--accent)}
 .ptable th button svg{width:10px;height:10px;flex:none}
 .ptable th.r button{justify-content:flex-end}
@@ -300,6 +300,7 @@ input[type="date"].text-input{-webkit-appearance:none;appearance:none;text-align
 .stepper input{width:76px;text-align:center;min-height:48px;background:var(--bg);border:1px solid var(--line);border-radius:12px;font-family:var(--display);font-size:24px;font-weight:700}
 .stepper input:focus{outline:none;border-color:var(--accent)}
 .stepper span{color:var(--muted);margin-left:2px}
+.stepper .clr{margin-left:auto}
 .choice{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .choice button{min-height:40px;padding:0 4px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-weight:600;font-size:14.5px;color:var(--muted)}
 .choice button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
@@ -433,16 +434,23 @@ function sched(p, b){
   const every = b === WATER ? p.every : p.fert;
   const last = lastOf(p, b);
   if (!last) return { last: null, since: null, due: null, dueIn: null, every, state: "never", doneToday: false };
-  const since = diffDays(last, T), due = addDays(last, every), dueIn = diffDays(T, due);
-  const doneToday = last === T;
+  const since = diffDays(last, T), doneToday = last === T;
+  if (!every) return { last, since, due: null, dueIn: null, every: null, state: doneToday ? "done" : "none", doneToday };   // no check interval set
+  const due = addDays(last, every), dueIn = diffDays(T, due);
   const state = doneToday ? "done" : dueIn < 0 ? "over" : dueIn === 0 ? "today" : "ok";
   return { last, since, due, dueIn, every, state, doneToday };
 }
 const water = p => sched(p, WATER);
 const fert = p => p.fert ? sched(p, FERT) : null;
 
-// Order: plants never logged first, then by days until next watering (most overdue first), then name.
-function sortKey(p){ const w = water(p); return w.state === "never" ? -1e6 : w.dueIn; }
+// Order: plants never logged first, then by days until next check (most overdue first),
+// then plants with no check interval (longest since watered first), then name.
+function sortKey(p){
+  const w = water(p);
+  if (w.state === "never") return -1e6;
+  if (!p.every) return 1e6 - w.since;
+  return w.dueIn;
+}
 function sortedPlants(){
   return S.plants.slice().sort((a, b) => sortKey(a) - sortKey(b) || a.name.localeCompare(b.name));
 }
@@ -463,8 +471,8 @@ function progress(){
   let need = 0, over = 0;
   for (const p of sortedPlants()) {
     const prev = lastOf(p, WATER, T), wt = has(p, T, WATER);
-    const wasDue = prev ? addDays(prev, p.every) <= T : false;
-    if (wasDue || wt) set.push({ p, on: wt, late: !wt && prev && addDays(prev, p.every) < T });
+    const wasDue = prev && p.every ? addDays(prev, p.every) <= T : false;
+    if (wasDue || wt) set.push({ p, on: wt, late: !wt && wasDue && addDays(prev, p.every) < T });
     const w = water(p);
     if (w.state === "over") { need++; over++; } else if (w.state === "today") need++;
   }
@@ -519,7 +527,7 @@ function potArt(){
 
 /* ===================== Text helpers ===================== */
 function dueText(n){ return n < 0 ? `Overdue ${plural(-n, "day")}` : n === 0 ? "Due today" : n === 1 ? "Due tomorrow" : `Due in ${n} days`; }
-function nextShort(s){ if (s.state === "never") return "–"; const n = s.dueIn; return n < 0 ? `${-n}d late` : n === 0 ? "Today" : `${n}d`; }
+function nextShort(s){ if (s.state === "never" || s.dueIn === null) return "–"; const n = s.dueIn; return n < 0 ? `${-n}d late` : n === 0 ? "Today" : `${n}d`; }
 function sinceHTML(w){
   if (w.state === "never") return `<div class="since">Not logged yet</div>`;
   if (w.since === 0) return `<div class="since">${I.drop}<span>Watered today</span></div>`;
@@ -617,7 +625,7 @@ function viewList(){
   const val = p => {
     if (key === "name") return p.name.toLowerCase();
     if (key === "adopted") return p.adopted || null;
-    if (key === "every") return p.every;
+    if (key === "every") return p.every || null;
     const w = water(p); return w.since;                       // "watered": days since last watering
   };
   const rows = S.plants.slice().sort((a, b) => {
@@ -644,13 +652,13 @@ function viewList(){
   return `
     <div class="list-wrap"><div class="list-in">
       <table class="ptable">
-        <colgroup><col style="width:39%"><col style="width:24%"><col style="width:15%"><col style="width:22%"></colgroup>
-        <thead><tr>${th("name", "Plant")}${th("adopted", "Adopted")}${th("every", "Water", "r")}${th("watered", "Last", "r")}</tr></thead>
+        <colgroup><col style="width:37%"><col style="width:23%"><col style="width:18%"><col style="width:22%"></colgroup>
+        <thead><tr>${th("name", "Plant")}${th("adopted", "Adopted")}${th("every", "Check", "r")}${th("watered", "Last", "r")}</tr></thead>
         <tbody>${body}<tr class="addrow"><td colspan="4">${cellView(null, "name")}</td></tr></tbody>
       </table>
       <datalist id="listRooms">${rooms.map(r => `<option value="${esc(r)}">`).join("")}</datalist>
     </div></div>
-    <p class="footnote">Tap a name, room, adoption date, or watering interval to edit it. Tap Last to open the plant. Tap a column heading to sort.</p>`;
+    <p class="footnote">Tap a name, room, adoption date, or check interval to edit it. Tap Last to open the plant. Tap a column heading to sort.</p>`;
 }
 
 /* ----- Inline cell editing for the All list ----- */
@@ -662,7 +670,7 @@ function cellView(p, fld){
   else if (fld === "name") inner = `<button class="cellbtn" ${attrs} aria-label="Edit name of ${esc(p.name)}"><span class="pn">${esc(p.name)}</span></button>`;
   else if (fld === "room") inner = `<button class="cellbtn sub" ${attrs} aria-label="Edit room of ${esc(p.name)}">${p.room ? esc(p.room) : `<span class="ph">Add room</span>`}</button>`;
   else if (fld === "adopted") inner = `<button class="cellbtn num" ${attrs} aria-label="Edit adoption date of ${esc(p.name)}">${p.adopted ? shortDate(p.adopted) : `<span class="ph">Add</span>`}</button>`;
-  else inner = `<button class="cellbtn num" ${attrs} aria-label="Edit watering interval of ${esc(p.name)}">${p.every}d</button>`;
+  else inner = `<button class="cellbtn num" ${attrs} aria-label="Edit check interval of ${esc(p.name)}">${p.every ? `${p.every}d` : `<span class="ph">Add</span>`}</button>`;
   return `<div class="cell-slot" data-cell="${id}:${fld}">${inner}</div>`;
 }
 // Editing state of one cell
@@ -673,7 +681,7 @@ function cellEditor(p, fld){
   else if (fld === "room") inp = `<input class="cell-in sub" data-edit="1" maxlength="40" enterkeyhint="done" autocomplete="off" list="listRooms" placeholder="Room" value="${esc(p.room || "")}" aria-label="Room">`;
   else if (fld === "adopted") inp = `<input class="cell-in date" data-edit="1" type="date" max="${T}" value="${esc(p.adopted || "")}" aria-label="Adoption date">
       <button class="cell-clear" type="button" data-a="cell-clear">Clear</button>`;
-  else inp = `<input class="cell-in num" data-edit="1" type="number" inputmode="numeric" min="1" max="365" enterkeyhint="done" value="${p.every}" aria-label="Water every how many days">`;
+  else inp = `<input class="cell-in num" data-edit="1" type="number" inputmode="numeric" min="1" max="365" enterkeyhint="done" placeholder="–" value="${p.every || ""}" aria-label="Check every how many days (optional)">`;
   return `<div class="cell-slot editing" data-cell="${id}:${fld}">${inp}</div>`;
 }
 function startCell(el){
@@ -704,7 +712,7 @@ function commitCell(inp){
     if (ce.f === "name" && v) p.name = v.slice(0, 60);
     if (ce.f === "room") p.room = v.slice(0, 40);
     if (ce.f === "adopted") p.adopted = isKey(v) && v <= T ? v : "";
-    if (ce.f === "every") { const n = parseInt(v, 10); if (n) p.every = clamp(n, 1, 365); }
+    if (ce.f === "every") { const n = parseInt(v, 10); p.every = n > 0 ? clamp(n, 1, 365) : null; }
     save();
   }
   if (slot) slot.outerHTML = cellView(p, ce.f);
@@ -828,13 +836,13 @@ function renderSheet(){
 }
 
 function newDraft(){ return { name: "", every: 7, room: "", adopted: "", notes: "", fertOn: false, fert: 30, when: "unsure", date: addDays(T, -2) }; }
-function editDraft(p){ return { name: p.name, every: p.every, room: p.room || "", adopted: p.adopted || "", notes: p.notes || "", fertOn: !!p.fert, fert: p.fert || 30 }; }
-function stepper(field, val, label){
+function editDraft(p){ return { name: p.name, every: p.every || "", room: p.room || "", adopted: p.adopted || "", notes: p.notes || "", fertOn: !!p.fert, fert: p.fert || 30 }; }
+function stepper(field, val, label, clearable){
   return `<div class="stepper">
     <button type="button" data-a="step" data-f="${field}" data-v="-1" aria-label="Fewer days">${I.minus}</button>
-    <input class="num" id="f-${field}" data-f="${field}" type="number" inputmode="numeric" min="1" max="365" value="${esc(val)}" aria-label="${label}">
+    <input class="num" id="f-${field}" data-f="${field}" type="number" inputmode="numeric" min="1" max="365" placeholder="–" value="${esc(val)}" aria-label="${label}">
     <button type="button" data-a="step" data-f="${field}" data-v="1" aria-label="More days">${I.plus}</button>
-    <span>days</span></div>`;
+    <span>days</span>${clearable && String(val) !== "" ? `<button type="button" class="chip-btn clr" data-a="clear-every">Clear</button>` : ""}</div>`;
 }
 function formSheet(s){
   const d = s.draft, isNew = !s.id;
@@ -845,7 +853,7 @@ function formSheet(s){
     <form data-form="plant" novalidate>
       <div class="field"><label for="fName">Name</label>
         <input class="text-input" id="fName" data-f="name" maxlength="60" placeholder="e.g. Fiddle leaf fig" autocomplete="off" enterkeyhint="done" value="${esc(d.name)}"></div>
-      <div class="field"><span class="lbl">Water every</span>${stepper("every", d.every, "Water every how many days")}</div>
+      <div class="field"><span class="lbl">Check every <span class="opt">(optional)</span></span>${stepper("every", d.every, "Check every how many days (optional)", true)}</div>
       <div class="field"><label for="fRoom">Room <span class="opt">(optional)</span></label>
         <input class="text-input" id="fRoom" data-f="room" maxlength="40" list="roomList" placeholder="e.g. Living room" autocomplete="off" value="${esc(d.room)}">
         <datalist id="roomList">${rooms.map(r => `<option value="${esc(r)}">`).join("")}</datalist></div>
@@ -885,8 +893,8 @@ function plantSheet(s){
   return `
     <div class="sheet-head"><h3>${esc(p.name)}</h3><button class="icon-btn" data-a="close" aria-label="Close">${I.close}</button></div>
     ${p.room || p.adopted ? `<div class="sheet-sub">${p.room ? `<span>${I.pin}${esc(p.room)}</span>` : ""}${p.adopted ? `<span>${I.cal}Adopted ${f(p.adopted, { month: "short", day: "numeric", year: "numeric" })}</span>` : ""}</div>` : ""}
-    <div class="mini-stats">${miniTile("Days since", w.since === null ? "–" : w.since)}${miniTile("Every", `${p.every}d`)}${miniTile("Next", nextShort(w), nextCls)}</div>
-    <div class="toggle-row"><div>Watered today<small>${w.doneToday ? "Logged" : w.state === "never" ? "No waterings logged yet" : dueText(w.dueIn)}</small></div>
+    <div class="mini-stats">${miniTile("Days since", w.since === null ? "–" : w.since)}${miniTile("Every", p.every ? `${p.every}d` : "–")}${miniTile("Next", nextShort(w), nextCls)}</div>
+    <div class="toggle-row"><div>Watered today<small>${w.doneToday ? "Logged" : w.state === "never" ? "No waterings logged yet" : w.state === "none" ? `Last watered ${w.since === 1 ? "yesterday" : `${w.since} days ago`}` : dueText(w.dueIn)}</small></div>
       <button class="switch" role="switch" aria-checked="${w.doneToday}" data-a="today-bit" data-id="${p.id}" data-b="1" aria-label="Watered today"></button></div>
     ${fz ? `<div class="toggle-row"><div>Fertilized today<small>${fz.doneToday ? "Logged" : fz.state === "never" ? `Every ${fz.every} days · not logged yet` : `Every ${fz.every} days · ${dueText(fz.dueIn).toLowerCase()}`}</small></div>
       <button class="switch teal" role="switch" aria-checked="${fz.doneToday}" data-a="today-bit" data-id="${p.id}" data-b="2" aria-label="Fertilized today"></button></div>` : ""}
@@ -1011,12 +1019,15 @@ const A = {
   "edit-plant": el => { const p = byId(el.dataset.id); if (!p) return; openSheet({ type: "form", id: p.id, draft: editDraft(p), ret: Object.assign({}, UI.sheet, { confirmDel: false }) }); },
   step: el => {
     const s = UI.sheet, fld = el.dataset.f; if (!s || !s.draft) return;
-    const cur = parseInt(s.draft[fld], 10) || (fld === "fert" ? 30 : 7);
-    s.draft[fld] = clamp(cur + +el.dataset.v, 1, 365);
+    const n = parseInt(s.draft[fld], 10);
+    const wasBlank = !(n > 0);
+    s.draft[fld] = wasBlank ? (fld === "fert" ? 30 : 7) : clamp(n + +el.dataset.v, 1, 365);   // blank jumps to a sensible default
+    if (wasBlank && fld === "every") { renderSheet(); return; }
     const inp = document.getElementById("f-" + fld); if (inp) inp.value = s.draft[fld];
   },
   when: el => { UI.sheet.draft.when = el.dataset.v; renderSheet(); },
   "clear-adopted": () => { UI.sheet.draft.adopted = ""; renderSheet(); },
+  "clear-every": () => { UI.sheet.draft.every = ""; renderSheet(); },
   cell: el => startCell(el),
   "cell-clear": el => { const inp = el.parentElement.querySelector(".cell-in"); if (inp) { inp.value = ""; inp.blur(); } },
   lsort: el => { const k = el.dataset.v, s = UI.listSort; if (s.key === k) s.dir = -s.dir; else { s.key = k; s.dir = k === "watered" ? -1 : 1; } render(); },
@@ -1058,6 +1069,10 @@ document.addEventListener("change", e => {
     const btn = document.querySelector('[data-a="clear-adopted"]');
     if (!!e.target.value !== !!btn) renderSheet();
   }
+  if (e.target.dataset && e.target.dataset.f === "every" && UI.sheet && UI.sheet.draft) {
+    const btn = document.querySelector('[data-a="clear-every"]');
+    if (!!e.target.value !== !!btn) renderSheet();
+  }
 });
 document.addEventListener("submit", e => {
   if (e.target.dataset.form !== "plant") return;
@@ -1065,7 +1080,7 @@ document.addEventListener("submit", e => {
   const s = UI.sheet, d = s.draft;
   const name = String(d.name).trim();
   if (!name) { const i = document.getElementById("fName"); i.focus(); snack("Give the plant a name"); return; }
-  const every = clamp(parseInt(d.every, 10) || 7, 1, 365);
+  const everyN = parseInt(d.every, 10), every = everyN > 0 ? clamp(everyN, 1, 365) : null;
   const fertDays = d.fertOn ? clamp(parseInt(d.fert, 10) || 30, 1, 365) : null;
   const room = String(d.room).trim().slice(0, 40), notes = String(d.notes).trim().slice(0, 500);
   const adopted = isKey(d.adopted) && d.adopted <= T ? d.adopted : "";
@@ -1117,7 +1132,7 @@ function demoData(){
     }
     if (fertEvery) for (let d = addDays(T, -fertLast); diffDays(d, T) < 80; d = addDays(d, -fertEvery)) L[d] = (L[d] || 0) | FERT;
     const keys = Object.keys(L).sort();
-    plants.push({ id, name, room, adopted: adoptedAgo ? addDays(T, -adoptedAgo) : "", notes, every, fert: fertEvery, created: keys[0] || T });
+    plants.push({ id, name, room, every: name === "Snake plant" ? null : every, adopted: adoptedAgo ? addDays(T, -adoptedAgo) : "", notes, fert: fertEvery, created: keys[0] || T });
   });
   return { v: 1, plants, log };
 }
