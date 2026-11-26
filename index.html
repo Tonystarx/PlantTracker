@@ -124,6 +124,13 @@ svg{display:block}
 .badge.over{background:var(--burgundy);color:#fff}
 .badge.today{background:var(--amber);color:var(--accent-ink)}
 .badge.next{background:color-mix(in srgb,var(--accent) 24%,var(--soft));color:var(--ink)}
+.nextline{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:8px}
+.nextline svg{width:14px;height:14px;color:var(--accent);flex:none}
+.nextline.due{color:var(--amber)}
+.nextline.due svg{color:var(--amber)}
+.nextline.over{color:var(--burgundy-ink)}
+.nextline.over svg{color:var(--burgundy-ink)}
+.nextline+.fertline{margin-top:5px}
 .fertline{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:8px}
 .fertline svg{width:14px;height:14px;color:var(--teal);flex:none}
 .fertline.due{color:var(--amber)}
@@ -531,7 +538,18 @@ function nextShort(s){ if (s.state === "never" || s.dueIn === null) return "–"
 function sinceHTML(w){
   if (w.state === "never") return `<div class="since">Not logged yet</div>`;
   if (w.since === 0) return `<div class="since">${I.drop}<span>Watered today</span></div>`;
-  return `<div class="since"><b class="num">${w.since}</b><span>${w.since === 1 ? "day" : "days"} since watered</span></div>`;
+  return `<div class="since"><b class="num">${w.since}</b><span>${w.since === 1 ? "day" : "days"} since last watered</span></div>`;
+}
+// Next check date, shown only when the plant has a check interval and at least one watering logged.
+function nextCheckHTML(w){
+  if (!w.due) return "";
+  const day = f(w.due, { weekday: "short", month: "short", day: "numeric" });
+  let txt, cls = "";
+  if (w.dueIn < 0) { txt = `Next check: ${day} · overdue`; cls = "over"; }
+  else if (w.dueIn === 0) { txt = "Next check: today"; cls = "due"; }
+  else if (w.dueIn === 1) txt = `Next check: tomorrow, ${day}`;
+  else txt = `Next check: ${day}`;
+  return `<div class="nextline ${cls}">${I.cal}<span>${txt}</span></div>`;
 }
 function badgeHTML(p, w){
   if (w.state === "never") return `<span class="badge">Every ${plural(p.every, "day")}</span>`;
@@ -602,7 +620,7 @@ function viewPlants(){
     <div class="section-head"><h2>Next to water</h2></div>
     <div class="cards" id="list">${sortedPlants().map(card).join("")}</div>
     <button class="ghost" data-a="add">${I.plus}Add plant</button>
-    <p class="footnote">Sorted by next watering. Tap a plant for its calendar, fertilizer, and edits.</p>`;
+    <p class="footnote">Sorted by next check. Tap a plant for its calendar, fertilizer, and edits.</p>`;
 }
 function card(p){
   const w = water(p);
@@ -611,7 +629,7 @@ function card(p){
   return `<div class="pcard ${cls}" data-id="${p.id}">
     <div class="pcard-in">
       <div class="prow">
-        <button class="card-main" data-a="open-plant" data-id="${p.id}"><div class="card-title">${esc(p.name)}</div>${sinceHTML(w)}${fertHTML(p)}</button>
+        <button class="card-main" data-a="open-plant" data-id="${p.id}"><div class="card-title">${esc(p.name)}</div>${sinceHTML(w)}${nextCheckHTML(w)}${fertHTML(p)}</button>
         <div class="check-wrap"><span class="burst">${rays}</span>
           <button class="check ${w.doneToday ? "on" : ""}" data-a="toggle" data-id="${p.id}" role="checkbox" aria-checked="${w.doneToday}" aria-label="Mark ${esc(p.name)} watered today">${I.check}</button></div>
       </div>
