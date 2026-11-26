@@ -112,10 +112,10 @@ svg{display:block}
 .pcard.today .pcard-in::before{background:var(--amber)}
 .pcard.over .pcard-in::before{background:var(--burgundy-ink)}
 
-.card-main{flex:1;min-width:0;text-align:left;display:block;align-self:stretch;padding:0 0 2px}
+.card-main{flex:1;min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:stretch;padding:2px 0 4px 62px}
 .card-title{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.15;overflow-wrap:anywhere}
-.since{color:var(--muted);font-size:15px;margin-top:2px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-.since b{font-family:var(--display);font-size:24px;line-height:1;color:var(--ink);font-weight:700;letter-spacing:.02em}
+.since{color:var(--muted);font-size:15px;margin-top:6px;display:flex;align-items:baseline;justify-content:center;gap:7px;flex-wrap:wrap}
+.since b{font-family:var(--display);font-size:44px;line-height:.9;color:var(--ink);font-weight:700;letter-spacing:.02em}
 .since svg{width:14px;height:14px;align-self:center;color:var(--accent);flex:none}
 .prow{display:flex;align-items:center;gap:12px;position:relative;z-index:1;min-height:66px}
 .prow.top .badge{margin-top:4px;flex:none}
@@ -127,7 +127,7 @@ svg{display:block}
 .badge.over{background:var(--burgundy);color:#fff}
 .badge.today{background:var(--amber);color:var(--accent-ink)}
 .badge.next{background:color-mix(in srgb,var(--accent) 24%,var(--soft));color:var(--ink)}
-.fertline{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:7px}
+.fertline{display:flex;gap:6px;align-items:center;justify-content:center;font-size:13.5px;color:var(--muted);margin-top:8px;text-align:center}
 .fertline svg{width:14px;height:14px;color:var(--teal);flex:none}
 .fertline.due{color:var(--amber)}
 .fertline.due svg{color:var(--amber)}
@@ -497,13 +497,13 @@ function badgeHTML(p, w){
 function fertHTML(p){
   const s = fert(p); if (!s) return "";
   let txt, cls = "";
-  if (s.state === "never") txt = "Fertilizer not logged yet";
+  if (s.state === "never") txt = "Feeding not logged yet";
   else if (s.doneToday) txt = "Fertilized today";
   else {
     txt = `Fed ${s.since === 1 ? "yesterday" : `${s.since}d ago`}`;
-    if (s.state === "over") { txt += ` · fertilizer ${-s.dueIn}d overdue`; cls = "over"; }
-    else if (s.state === "today") { txt += " · fertilizer due today"; cls = "due"; }
-    else txt += ` · next feeding in ${s.dueIn}d`;
+    if (s.state === "over") { txt += ` · ${-s.dueIn}d overdue`; cls = "over"; }
+    else if (s.state === "today") { txt += " · due today"; cls = "due"; }
+    else txt += ` · next in ${s.dueIn}d`;
   }
   return `<div class="fertline ${cls}">${I.leaf}<span>${txt}</span></div>`;
 }
