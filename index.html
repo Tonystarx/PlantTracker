@@ -75,6 +75,7 @@ svg{display:block}
 .icon-btn.accent{color:var(--accent)}
 .text-btn{min-height:44px;padding:0 6px;color:var(--accent);font-weight:600}
 .eyebrow{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);text-align:center;margin:6px 0 2px}
+.large-title.long{font-size:38px;letter-spacing:.1em;padding-left:.1em}
 .large-title{font-family:var(--display);font-weight:700;font-size:46px;line-height:1;letter-spacing:.14em;text-transform:uppercase;text-align:center;margin:0;
   padding-left:.14em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 .rule{display:flex;align-items:center;gap:10px;margin:12px auto 0;max-width:280px}
@@ -250,6 +251,29 @@ svg{display:block}
 .sheet-head h3{flex:1;font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:.04em;margin:6px 0 0;line-height:1.1;overflow-wrap:anywhere}
 .sheet-sub{color:var(--muted);font-size:14px;margin:-6px 0 14px;display:flex;gap:6px;align-items:center}
 .sheet-sub svg{width:14px;height:14px}
+.sheet-sub span{display:inline-flex;gap:6px;align-items:center}
+.sheet-sub span+span::before{content:"";width:4px;height:4px;transform:rotate(45deg);background:var(--raised);margin:0 4px 0 2px}
+.date-row{display:flex;gap:8px;align-items:center}
+.date-row .text-input{flex:1;min-width:0}
+/* ---------- All-plants list ---------- */
+.list-wrap{padding:1px;clip-path:var(--chamfer);background:var(--line)}
+.list-in{--ch:11px;clip-path:var(--chamfer);background:var(--surface);padding:6px 12px 4px}
+.ptable{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}
+.ptable th{padding:0;border-bottom:1px solid var(--line)}
+.ptable th button{display:flex;align-items:center;gap:3px;width:100%;min-height:42px;padding:0 4px;font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ptable th button[aria-sort]{color:var(--accent)}
+.ptable th button svg{width:10px;height:10px;flex:none}
+.ptable th.r button{justify-content:flex-end}
+.ptable td{padding:0;border-bottom:1px solid var(--line);vertical-align:middle}
+.ptable tr:last-child td{border-bottom:0}
+.ptable td button{display:block;width:100%;min-height:56px;padding:9px 4px;text-align:left}
+.ptable td.r button{text-align:right}
+.ptable .pn{font-family:var(--display);font-weight:600;font-size:18px;line-height:1.15;overflow-wrap:anywhere}
+.ptable .pr{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptable .dim{color:var(--muted)}
+.ptable .late{color:var(--burgundy-ink)}
+.ptable .due{color:var(--amber)}
+.ptable tr:active td{background:var(--soft)}
 .field{display:grid;gap:8px;margin-bottom:16px}
 .field label,.field .lbl{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .field .opt{text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:400;font-size:13px}
@@ -353,7 +377,7 @@ function diffDays(a, b){ return Math.round((k2d(b) - k2d(a)) / 864e5); }
 const isKey = k => typeof k === "string" && /^\d{4}-\d{2}-\d{2}$/.test(k);
 
 /* ===================== State ===================== */
-// plants: [{ id, name, room, notes, every (days), fert (days or null), created, fan }]
+// plants: [{ id, name, room, adopted (YYYY-MM-DD or ""), notes, every (days), fert (days or null), created }]
 // log:    { plantId: { "YYYY-MM-DD": bits } }   bit 1 = watered, bit 2 = fertilized
 const LS_KEY = "plant-tracker-v1";
 const WATER = 1, FERT = 2;
@@ -365,7 +389,7 @@ let S = load() || blank();
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
 
 let T = todayKey();
-const UI = { tab: "plants", calMode: "month", month: T.slice(0,7), week: weekStartOf(T), sheet: null, pop: null };
+const UI = { listSort: { key: "name", dir: 1 }, tab: "plants", calMode: "month", month: T.slice(0,7), week: weekStartOf(T), sheet: null, pop: null };
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -449,6 +473,10 @@ const I = {
   right: '<svg width="22" height="22" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   close: '<svg width="22" height="22" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
   tPlants: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 15h10l-1.4 6.5H8.4z"/><path d="M12 15V6.5"/><path d="M12 10C12 6 9 3.5 5 3.5c0 4 3 6.5 7 6.5zM12 12.5c0-3.4 2.6-5.6 6-5.6 0 3.4-2.6 5.6-6 5.6z"/></svg>',
+  tList: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><path d="M4.5 5.2l1.3 1.3-1.3 1.3-1.3-1.3zM4.5 10.7l1.3 1.3-1.3 1.3-1.3-1.3zM4.5 16.2l1.3 1.3-1.3 1.3-1.3-1.3z" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+  up: '<svg viewBox="0 0 10 10"><path d="M2 6.5L5 3.5l3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  down: '<svg viewBox="0 0 10 10"><path d="M2 3.5L5 6.5l3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cal: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="11" rx="1.8"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3"/></svg>',
   tCal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7 13.5h2M11 13.5h2M15 13.5h2M7 17h2M11 17h2" stroke-linecap="round"/></svg>'
 };
 
@@ -507,8 +535,8 @@ function fertHTML(p){
 /* ===================== Render ===================== */
 const app = document.getElementById("app");
 function render(){
-  const titles = { plants: "Plants", calendar: "Calendar" };
-  const eyebrow = UI.tab === "plants" ? f(T, { weekday: "long", month: "long", day: "numeric" }) : "All plants combined";
+  const titles = { plants: "Plants", list: "All Plants", calendar: "Calendar" };
+  const eyebrow = UI.tab === "plants" ? f(T, { weekday: "long", month: "long", day: "numeric" }) : UI.tab === "list" ? `${plural(S.plants.length, "plant")} in your collection` : "All plants combined";
   app.innerHTML = `
     <header class="hero">
       ${sunburst()}
@@ -517,10 +545,10 @@ function render(){
         ${S.plants.length ? `<button class="icon-btn accent" data-a="add" aria-label="Add plant">${I.plusLg}</button>` : `<span style="width:44px"></span>`}
       </div>
       <p class="eyebrow">${esc(eyebrow)}</p>
-      <h1 class="large-title">${titles[UI.tab]}</h1>
+      <h1 class="large-title ${titles[UI.tab].length > 8 ? "long" : ""}">${titles[UI.tab]}</h1>
       <div class="rule"><span></span><i class="sm"></i><i></i><i class="sm"></i><span></span></div>
     </header>
-    ${UI.tab === "plants" ? viewPlants() : viewCalendar()}`;
+    ${UI.tab === "plants" ? viewPlants() : UI.tab === "list" ? viewList() : viewCalendar()}`;
   renderTabs();
   if (UI.pop) {
     const w = app.querySelector(`.pcard[data-id="${UI.pop}"]`);
@@ -529,7 +557,7 @@ function render(){
   }
 }
 function renderTabs(){
-  const t = [["plants", "Plants", I.tPlants], ["calendar", "Calendar", I.tCal]];
+  const t = [["plants", "Plants", I.tPlants], ["list", "All", I.tList], ["calendar", "Calendar", I.tCal]];
   document.getElementById("tabs").innerHTML = t.map(([id, label, ic]) =>
     `<button class="tab" data-a="tab" data-v="${id}" ${UI.tab === id ? 'aria-current="page"' : ""}>${ic}<span>${label}</span></button>`).join("");
 }
@@ -568,6 +596,49 @@ function card(p){
           <button class="check ${w.doneToday ? "on" : ""}" data-a="toggle" data-id="${p.id}" role="checkbox" aria-checked="${w.doneToday}" aria-label="Mark ${esc(p.name)} watered today">${I.check}</button></div>
       </div>
     </div></div>`;
+}
+
+const shortDate = k => f(k, { month: "numeric", day: "numeric", year: "2-digit" });
+function viewList(){
+  if (!S.plants.length) return `<div class="empty">${potArt()}<h3>No plants yet</h3><p>Every plant you add shows up here with its details.</p><button class="btn" data-a="add">Add a plant</button></div>`;
+  const { key, dir } = UI.listSort;
+  const val = p => {
+    if (key === "name") return p.name.toLowerCase();
+    if (key === "adopted") return p.adopted || null;
+    if (key === "every") return p.every;
+    const w = water(p); return w.since;                       // "watered": days since last watering
+  };
+  const rows = S.plants.slice().sort((a, b) => {
+    const x = val(a), y = val(b);
+    if (x === null && y === null) return a.name.localeCompare(b.name);
+    if (x === null) return 1; if (y === null) return -1;     // blanks always last
+    return (x < y ? -1 : x > y ? 1 : 0) * dir || a.name.localeCompare(b.name);
+  });
+  const th = (k, label, cls = "") => {
+    const on = key === k;
+    return `<th class="${cls}" scope="col"><button data-a="lsort" data-v="${k}" ${on ? `aria-sort="${dir > 0 ? "ascending" : "descending"}"` : ""}>${label}${on ? (dir > 0 ? I.up : I.down) : ""}</button></th>`;
+  };
+  const body = rows.map(p => {
+    const w = water(p);
+    const wtxt = w.since === null ? `<span class="dim">–</span>` : w.since === 0 ? "Today" : `${w.since}d ago`;
+    const wcls = w.doneToday ? "" : w.state === "over" ? "late" : w.state === "today" ? "due" : "";
+    const sub = p.room ? esc(p.room) : "";
+    const open = `data-a="open-plant" data-id="${p.id}"`;
+    return `<tr>
+      <td><button ${open}><span class="pn">${esc(p.name)}</span>${sub ? `<span class="pr">${sub}</span>` : ""}</button></td>
+      <td><button ${open} class="num">${p.adopted ? shortDate(p.adopted) : `<span class="dim">–</span>`}</button></td>
+      <td class="r"><button ${open} class="num">${p.every}d</button></td>
+      <td class="r"><button ${open} class="num ${wcls}">${wtxt}</button></td></tr>`;
+  }).join("");
+  return `
+    <div class="list-wrap"><div class="list-in">
+      <table class="ptable">
+        <colgroup><col style="width:39%"><col style="width:24%"><col style="width:15%"><col style="width:22%"></colgroup>
+        <thead><tr>${th("name", "Plant")}${th("adopted", "Adopted")}${th("every", "Water", "r")}${th("watered", "Last", "r")}</tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div></div>
+    <p class="footnote">Tap a column to sort. Tap a plant to see or edit its details, including its adoption date.</p>`;
 }
 
 function viewCalendar(){
@@ -679,8 +750,8 @@ function renderSheet(){
   if (s.type === "form" && s.focus) { s.focus = false; setTimeout(() => { const i = document.getElementById("fName"); i && i.focus(); }, 60); }
 }
 
-function newDraft(){ return { name: "", every: 7, room: "", notes: "", fertOn: false, fert: 30, when: "unsure", date: addDays(T, -2) }; }
-function editDraft(p){ return { name: p.name, every: p.every, room: p.room || "", notes: p.notes || "", fertOn: !!p.fert, fert: p.fert || 30 }; }
+function newDraft(){ return { name: "", every: 7, room: "", adopted: "", notes: "", fertOn: false, fert: 30, when: "unsure", date: addDays(T, -2) }; }
+function editDraft(p){ return { name: p.name, every: p.every, room: p.room || "", adopted: p.adopted || "", notes: p.notes || "", fertOn: !!p.fert, fert: p.fert || 30 }; }
 function stepper(field, val, label){
   return `<div class="stepper">
     <button type="button" data-a="step" data-f="${field}" data-v="-1" aria-label="Fewer days">${I.minus}</button>
@@ -701,6 +772,9 @@ function formSheet(s){
       <div class="field"><label for="fRoom">Room <span class="opt">(optional)</span></label>
         <input class="text-input" id="fRoom" data-f="room" maxlength="40" list="roomList" placeholder="e.g. Living room" autocomplete="off" value="${esc(d.room)}">
         <datalist id="roomList">${rooms.map(r => `<option value="${esc(r)}">`).join("")}</datalist></div>
+      <div class="field"><label for="fAdopted">Adoption date <span class="opt">(optional)</span></label>
+        <div class="date-row"><input class="text-input" id="fAdopted" type="date" data-f="adopted" max="${T}" value="${esc(d.adopted)}">
+        ${d.adopted ? `<button type="button" class="chip-btn" data-a="clear-adopted">Clear</button>` : ""}</div></div>
       ${isNew ? `<div class="field"><span class="lbl">Last watered</span>
         <div class="choice" role="group" aria-label="Last watered">${when.map(([v, l]) => `<button type="button" data-a="when" data-v="${v}" aria-pressed="${d.when === v}">${l}</button>`).join("")}</div>
         ${d.when === "earlier" ? `<input class="text-input" type="date" data-f="date" max="${T}" value="${esc(d.date)}" aria-label="Date last watered">` : ""}</div>` : ""}
@@ -733,7 +807,7 @@ function plantSheet(s){
   const nextCls = w.state === "over" ? "over" : w.state === "today" ? "today" : "";
   return `
     <div class="sheet-head"><h3>${esc(p.name)}</h3><button class="icon-btn" data-a="close" aria-label="Close">${I.close}</button></div>
-    ${p.room ? `<div class="sheet-sub">${I.pin}${esc(p.room)}</div>` : ""}
+    ${p.room || p.adopted ? `<div class="sheet-sub">${p.room ? `<span>${I.pin}${esc(p.room)}</span>` : ""}${p.adopted ? `<span>${I.cal}Adopted ${f(p.adopted, { month: "short", day: "numeric", year: "numeric" })}</span>` : ""}</div>` : ""}
     <div class="mini-stats">${miniTile("Days since", w.since === null ? "–" : w.since)}${miniTile("Every", `${p.every}d`)}${miniTile("Next", nextShort(w), nextCls)}</div>
     <div class="toggle-row"><div>Watered today<small>${w.doneToday ? "Logged" : w.state === "never" ? "No waterings logged yet" : dueText(w.dueIn)}</small></div>
       <button class="switch" role="switch" aria-checked="${w.doneToday}" data-a="today-bit" data-id="${p.id}" data-b="1" aria-label="Watered today"></button></div>
@@ -865,6 +939,8 @@ const A = {
     const inp = document.getElementById("f-" + fld); if (inp) inp.value = s.draft[fld];
   },
   when: el => { UI.sheet.draft.when = el.dataset.v; renderSheet(); },
+  "clear-adopted": () => { UI.sheet.draft.adopted = ""; renderSheet(); },
+  lsort: el => { const k = el.dataset.v, s = UI.listSort; if (s.key === k) s.dir = -s.dir; else { s.key = k; s.dir = k === "watered" ? -1 : 1; } render(); },
   "fert-on": () => { const d = UI.sheet.draft; d.fertOn = !d.fertOn; renderSheet(); },
   delete: el => {
     if (!UI.sheet.confirmDel) { UI.sheet.confirmDel = true; renderSheet(); return; }
@@ -892,9 +968,17 @@ document.addEventListener("click", e => {
   const fn = A[el.dataset.a]; if (fn) { if (el.closest("form") && el.type !== "submit") e.preventDefault(); fn(el, e); }
 });
 // Keep the add/edit form's typed values in the draft so re-renders don't lose them.
-document.addEventListener("input", e => {
+function syncDraft(e){
   const fld = e.target.dataset && e.target.dataset.f;
   if (fld && UI.sheet && UI.sheet.draft) UI.sheet.draft[fld] = e.target.value;
+}
+document.addEventListener("input", syncDraft);
+document.addEventListener("change", e => {
+  syncDraft(e);
+  if (e.target.dataset && e.target.dataset.f === "adopted" && UI.sheet && UI.sheet.draft) {
+    const btn = document.querySelector('[data-a="clear-adopted"]');
+    if (!!e.target.value !== !!btn) renderSheet();
+  }
 });
 document.addEventListener("submit", e => {
   if (e.target.dataset.form !== "plant") return;
@@ -905,15 +989,16 @@ document.addEventListener("submit", e => {
   const every = clamp(parseInt(d.every, 10) || 7, 1, 365);
   const fertDays = d.fertOn ? clamp(parseInt(d.fert, 10) || 30, 1, 365) : null;
   const room = String(d.room).trim().slice(0, 40), notes = String(d.notes).trim().slice(0, 500);
+  const adopted = isKey(d.adopted) && d.adopted <= T ? d.adopted : "";
   if (!s.id) {
-    const p = { id: uid(), name, room, notes, every, fert: fertDays, created: T };
+    const p = { id: uid(), name, room, adopted, notes, every, fert: fertDays, created: T };
     S.plants.push(p);
     const k = d.when === "today" ? T : d.when === "yesterday" ? addDays(T, -1) : d.when === "earlier" && isKey(d.date) && d.date <= T ? d.date : null;
     if (k) setBit(p, k, WATER, true); else save();
     UI.tab = "plants"; closeSheet(); snack(`Added “${name}”`);
   } else {
     const p = byId(s.id); if (!p) { closeSheet(); return; }
-    Object.assign(p, { name, room, notes, every, fert: fertDays }); save();
+    Object.assign(p, { name, room, adopted, notes, every, fert: fertDays }); save();
     openSheet(s.ret || { type: "plant", id: p.id, month: T.slice(0,7), mode: "w" }); render(); snack("Changes saved");
   }
 });
@@ -935,15 +1020,15 @@ function demoData(){
   let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   // [name, room, every, days since last watering (null = never), fertilize every, days since last feeding, notes]
   const defs = [
-    ["Fiddle leaf fig", "Living room", 7, 9, 30, 20, "Bright indirect light. Rotate a quarter turn each week."],
-    ["Monstera", "Living room", 5, 5, 28, 31, ""],
-    ["Basil", "Kitchen", 2, 0, null, null, "Pinch flowers off."],
-    ["Snake plant", "Bedroom", 14, 12, null, null, "Let soil dry out fully."],
-    ["Pothos", "Office", 6, 2, null, null, ""],
-    ["Calathea", "Bathroom", 4, null, null, null, "Filtered water only."]
+    ["Fiddle leaf fig", "Living room", 7, 9, 30, 20, "Bright indirect light. Rotate a quarter turn each week.", 410],
+    ["Monstera", "Living room", 5, 5, 28, 31, "", 760],
+    ["Basil", "Kitchen", 2, 0, null, null, "Pinch flowers off.", 45],
+    ["Snake plant", "Bedroom", 14, 12, null, null, "Let soil dry out fully.", null],
+    ["Pothos", "Office", 6, 2, null, null, "", 1200],
+    ["Calathea", "Bathroom", 4, null, null, null, "Filtered water only.", null]
   ];
   const plants = [], log = {};
-  defs.forEach(([name, room, every, last, fertEvery, fertLast, notes], i) => {
+  defs.forEach(([name, room, every, last, fertEvery, fertLast, notes, adoptedAgo], i) => {
     const id = "demo" + i, L = log[id] = {};
     if (last !== null) {
       for (let d = addDays(T, -last), n = 0; diffDays(d, T) < 80 && n < 40; n++) {
@@ -953,7 +1038,7 @@ function demoData(){
     }
     if (fertEvery) for (let d = addDays(T, -fertLast); diffDays(d, T) < 80; d = addDays(d, -fertEvery)) L[d] = (L[d] || 0) | FERT;
     const keys = Object.keys(L).sort();
-    plants.push({ id, name, room, notes, every, fert: fertEvery, created: keys[0] || T });
+    plants.push({ id, name, room, adopted: adoptedAgo ? addDays(T, -adoptedAgo) : "", notes, every, fert: fertEvery, created: keys[0] || T });
   });
   return { v: 1, plants, log };
 }
