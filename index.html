@@ -349,8 +349,6 @@ input[type="date"].text-input{-webkit-appearance:none;appearance:none;text-align
 .list-btn{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:54px;padding:0 14px;background:var(--bg);border:1px solid var(--line);border-radius:12px;text-align:left;font-weight:500}
 .list-btn small{color:var(--muted);font-size:13px;font-weight:400;display:block}
 .list-btn.warn{color:var(--danger)}
-.list-btn.confirm{background:var(--danger);color:var(--accent-ink);border-color:var(--danger)}
-.list-btn.confirm small{color:var(--accent-ink)}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 14px;margin-bottom:10px}
 .toggle-row small{display:block;color:var(--muted);font-size:13px}
 .switch{width:52px;height:32px;border-radius:16px;background:var(--line);position:relative;flex:none;transition:background .18s}
@@ -958,9 +956,6 @@ function settingsSheet(s){
       <div class="section-head" style="margin:0"><h2>Backup</h2></div>
       <button class="list-btn" data-a="export"><span>Export data<small>Save a JSON backup (Files, AirDrop, email)</small></span>${I.right}</button>
       <button class="list-btn" data-a="import"><span>Import data<small>Replace everything with a backup file</small></span>${I.right}</button>
-      <div class="section-head" style="margin:6px 0 0"><h2>Testing</h2></div>
-      <button class="list-btn" data-a="demo"><span>Load sample data<small>Replaces your plants with six examples</small></span>${I.right}</button>
-      <button class="list-btn ${s.confirmErase ? "confirm" : "warn"}" data-a="erase"><span>${s.confirmErase ? "Tap again to erase everything" : "Erase all data"}<small>Removes every plant and log on this device</small></span>${I.right}</button>
       <p class="hint" style="margin:0">Data lives on this device only. Export a backup now and then. Days end at midnight Eastern.</p>
     </div>`;
 }
@@ -1049,10 +1044,6 @@ const A = {
     if (!UI.sheet.confirmDel) { UI.sheet.confirmDel = true; renderSheet(); return; }
     const id = el.dataset.id, p = byId(id);
     S.plants = S.plants.filter(x => x.id !== id); delete S.log[id]; save(); closeSheet(); snack(`Deleted “${p ? p.name : "plant"}”`);
-  },
-  erase: () => {
-    if (!UI.sheet.confirmErase) { UI.sheet.confirmErase = true; renderSheet(); return; }
-    S = blank(); save(); closeSheet(); snack("All data erased");
   },
   export: async () => {
     const json = JSON.stringify(S, null, 2), name = `plants-${T}.json`;

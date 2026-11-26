@@ -15,6 +15,6 @@ A plant watering tracker built for iPhone, styled with Art Deco touches and an a
 - Calendar tab with a combined month view (plants watered each day, feedings, and projected due dates) and a week grid.
 - Days end at midnight Eastern.
 - Works offline after the first visit, and installs to the Home Screen with its own icon.
-- Data is saved on the device. Export/Import in Settings handles backups. Settings also has sample data and erase-all for testing.
+- Data is saved on the device. Export/Import in Settings handles backups.
 
 When you change index.html, bump `CACHE` in sw.js so installed copies pick up the update.
