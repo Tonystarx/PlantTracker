@@ -103,7 +103,7 @@ svg{display:block}
 .pcard.done{background:var(--grad)}
 .pcard.today{background:var(--amber)}
 .pcard.over{background:var(--burgundy);padding:1.5px}
-.pcard-in{--ch:11px;clip-path:var(--chamfer);background:var(--surface);display:flex;align-items:center;gap:12px;padding:14px 14px 14px 18px;min-height:96px;position:relative;overflow:hidden}
+.pcard-in{--ch:11px;clip-path:var(--chamfer);background:var(--surface);display:block;padding:14px 14px 14px 18px;min-height:96px;position:relative;overflow:hidden}
 .pcard.done .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--surface) 70%)}
 .pcard.over .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--burgundy) 22%,var(--surface)),var(--surface) 75%)}
 .pcard.today .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--amber) 9%,var(--surface)),var(--surface) 70%)}
@@ -111,20 +111,21 @@ svg{display:block}
 .pcard.done .pcard-in::before{background:var(--accent)}
 .pcard.today .pcard-in::before{background:var(--amber)}
 .pcard.over .pcard-in::before{background:var(--burgundy-ink)}
-.pcard-in>.card-main,.pcard-in>.check-wrap{position:relative;z-index:1}
-.card-main{flex:1;min-width:0;text-align:left;display:block;padding:2px 0}
+
+.card-main{flex:1;min-width:0;text-align:left;display:block;align-self:stretch;padding:0 0 2px}
 .card-title{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.15;overflow-wrap:anywhere}
 .since{color:var(--muted);font-size:15px;margin-top:2px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
 .since b{font-family:var(--display);font-size:24px;line-height:1;color:var(--ink);font-weight:700;letter-spacing:.02em}
 .since svg{width:14px;height:14px;align-self:center;color:var(--accent);flex:none}
-.chips{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:8px}
-.badge{display:inline-flex;align-items:center;min-height:24px;padding:0 11px;font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;
+.prow{display:flex;align-items:flex-start;gap:10px;position:relative;z-index:1}
+.prow.top .badge{margin-top:4px;flex:none}
+.prow.bottom{align-items:center;margin-top:2px}
+.title-btn{flex:1;min-width:0;text-align:left;display:block}
+.badge{display:inline-flex;align-items:center;min-height:24px;padding:0 11px;font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
   clip-path:polygon(7px 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,7px 100%,0 50%);background:var(--soft);color:var(--muted)}
 .badge.over{background:var(--burgundy);color:#fff}
 .badge.today{background:var(--amber);color:var(--accent-ink)}
 .badge.next{background:color-mix(in srgb,var(--accent) 24%,var(--soft));color:var(--ink)}
-.room{display:inline-flex;gap:4px;align-items:center;color:var(--muted);font-size:13.5px;min-width:0}
-.room svg{width:13px;height:13px;flex:none}
 .fertline{display:flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted);margin-top:7px}
 .fertline svg{width:14px;height:14px;color:var(--teal);flex:none}
 .fertline.due{color:var(--amber)}
@@ -153,18 +154,10 @@ svg{display:block}
 .burst i:nth-child(even){background:var(--teal);height:8px}
 @keyframes ray{0%{opacity:1;transform:rotate(var(--r)) translateY(-24px) scaleY(.4)}100%{opacity:0;transform:rotate(var(--r)) translateY(-44px) scaleY(1)}}
 
-/* Art Deco palm fan and tide motif on plant cards */
-.motif{position:absolute;pointer-events:none;z-index:0;fill:none;stroke:var(--raised);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
-.motif .lobe{fill:var(--surface)}
-.pcard.done .motif{stroke:color-mix(in srgb,var(--accent) 55%,var(--raised))}
-.pcard.done .motif .lobe{fill:color-mix(in srgb,var(--accent) 4%,var(--surface))}
-.pcard.over .motif{stroke:color-mix(in srgb,var(--burgundy) 70%,var(--raised))}
-.pcard.over .motif .lobe{fill:color-mix(in srgb,var(--burgundy) 8%,var(--surface))}
-.pcard.today .motif{stroke:color-mix(in srgb,var(--amber) 35%,var(--raised))}
-.motif.fan{width:96px;left:calc(100% - 178px + var(--px,.5) * 28px);opacity:.45;bottom:calc(14px + var(--py,0) * 8px);
-  transform:translateX(var(--cx,0px)) scale(var(--ps,1)) scaleX(var(--pf,1));transform-origin:50% 100%;will-change:transform}
-.motif.waves{left:0;right:0;bottom:0;height:18px;width:100%;opacity:.85}
-.pcard.done .motif.waves{stroke:color-mix(in srgb,var(--teal) 55%,var(--raised))}
+/* Faint Art Deco palm-leaf pattern on plant cards */
+.pcard-in::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2764%27 height=%2764%27 viewBox=%270 0 64 64%27%3E%3Cpath d=%27M3 64A29 29 0 0 1 61 64M10 64A22 22 0 0 1 54 64M25 64A7 7 0 0 1 39 64M23.8 61.8L4.0 56.5M24.6 59.8L6.9 49.5M26.0 58.0L11.5 43.5M27.7 56.6L17.5 38.9M29.8 55.8L24.5 36.0M32.0 55.5L32.0 35.0M34.2 55.8L39.5 36.0M36.2 56.6L46.5 38.9M38.0 58.0L52.5 43.5M39.4 59.8L57.1 49.5M40.2 61.8L60.0 56.5M1 64H25M39 64H63M-29 32A29 29 0 0 1 29 32M-22 32A22 22 0 0 1 22 32M-7 32A7 7 0 0 1 7 32M-8.2 29.8L-28.0 24.5M-7.4 27.8L-25.1 17.5M-6.0 26.0L-20.5 11.5M-4.3 24.6L-14.5 6.9M-2.2 23.8L-7.5 4.0M-0.0 23.5L-0.0 3.0M2.2 23.8L7.5 4.0M4.2 24.6L14.5 6.9M6.0 26.0L20.5 11.5M7.4 27.8L25.1 17.5M8.2 29.8L28.0 24.5M-31 32H-7M7 32H31M35 32A29 29 0 0 1 93 32M42 32A22 22 0 0 1 86 32M57 32A7 7 0 0 1 71 32M55.8 29.8L36.0 24.5M56.6 27.8L38.9 17.5M58.0 26.0L43.5 11.5M59.8 24.6L49.5 6.9M61.8 23.8L56.5 4.0M64.0 23.5L64.0 3.0M66.2 23.8L71.5 4.0M68.2 24.6L78.5 6.9M70.0 26.0L84.5 11.5M71.4 27.8L89.1 17.5M72.2 29.8L92.0 24.5M33 32H57M71 32H95%27 fill=%27none%27 stroke=%27%23C9C3F0%27 stroke-width=%271%27 stroke-linecap=%27round%27/%3E%3C/svg%3E") 0 0/56px 56px repeat;opacity:.06}
+.pcard.done .pcard-in::after{opacity:.09}
+.pcard.over .pcard-in::after,.pcard.today .pcard-in::after{opacity:.08}
 
 .ghost{display:flex;align-items:center;justify-content:center;gap:8px;min-height:62px;color:var(--accent);font-weight:600;width:100%;
   border:1.5px dashed var(--line);clip-path:var(--chamfer);background:transparent}
@@ -462,18 +455,6 @@ const I = {
   tCal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M7 13.5h2M11 13.5h2M15 13.5h2M7 17h2M11 17h2" stroke-linecap="round"/></svg>'
 };
 
-// Art Deco palm fan: five pointed leaves with midribs, rising from a stepped base.
-const FAN = (() => {
-  const cx = 60, base = 58; let p = "";
-  for (const [a, len] of [[-64, 38], [-32, 48], [0, 54], [32, 48], [64, 38]]) {
-    const w = len * 0.2, tip = base - len;
-    p += `<g transform="rotate(${a} ${cx} ${base})"><path class="lobe" d="M${cx} ${base} Q${cx - w} ${base - len * .55} ${cx} ${tip} Q${cx + w} ${base - len * .55} ${cx} ${base}Z"/><path d="M${cx} ${base - 3} L${cx} ${tip + 6}"/></g>`;
-  }
-  p += `<path d="M14 ${base}H106M28 ${base + 4}H92"/>`;
-  return `<svg class="motif fan" viewBox="0 0 120 64" aria-hidden="true">${p}</svg>`;
-})();
-const waves = id => `<svg class="motif waves" aria-hidden="true"><defs><pattern id="wv-${id}" width="40" height="18" patternUnits="userSpaceOnUse"><path d="M0 5Q10 -1 20 5T40 5M0 10Q10 4 20 10T40 10M0 15Q10 9 20 15T40 15"/></pattern></defs><rect width="100%" height="100%" fill="url(#wv-${id})" stroke="none"/></svg>`;
-
 function sunburst(){
   let rays = "";
   const n = 22;
@@ -544,8 +525,6 @@ function render(){
     </header>
     ${UI.tab === "plants" ? viewPlants() : viewCalendar()}`;
   renderTabs();
-  if (fanDirty) { fanDirty = false; save(); }
-  parallax();
   if (UI.pop) {
     const w = app.querySelector(`.pcard[data-id="${UI.pop}"]`);
     if (w) { w.querySelector(".check").classList.add("pop"); w.querySelector(".burst").classList.add("go"); }
@@ -580,30 +559,21 @@ function viewPlants(){
     <button class="ghost" data-a="add">${I.plus}Add plant</button>
     <p class="footnote">Sorted by next watering. Tap a plant for its calendar, fertilizer, and edits.</p>`;
 }
-// Each plant gets its own palm-fan placement, picked at random once and saved with the plant.
-let fanDirty = false;
-function fanVars(p){
-  if (!p.fan) {
-    p.fan = { x: +Math.random().toFixed(3), y: +Math.random().toFixed(3), s: +(0.85 + Math.random() * 0.3).toFixed(3), f: Math.random() < .5 ? -1 : 1 };
-    fanDirty = true;
-  }
-  const c = p.fan;
-  return `--px:${c.x};--py:${c.y};--ps:${c.s};--pf:${c.f}`;
-}
 function card(p){
   const w = water(p);
   const cls = w.doneToday ? "done" : w.state === "over" ? "over" : w.state === "today" ? "today" : "";
   const rays = Array.from({ length: 10 }, (_, i) => `<i style="--r:${i * 36}deg"></i>`).join("");
   return `<div class="pcard ${cls}" data-id="${p.id}">
-    <div class="pcard-in" style="${fanVars(p)}">${FAN}${waves(p.id)}
-      <button class="card-main" data-a="open-plant" data-id="${p.id}">
-        <div class="card-title">${esc(p.name)}</div>
-        ${sinceHTML(w)}
-        <div class="chips">${badgeHTML(p, w)}${p.room ? `<span class="room">${I.pin}${esc(p.room)}</span>` : ""}</div>
-        ${fertHTML(p)}
-      </button>
-      <div class="check-wrap"><span class="burst">${rays}</span>
-        <button class="check ${w.doneToday ? "on" : ""}" data-a="toggle" data-id="${p.id}" role="checkbox" aria-checked="${w.doneToday}" aria-label="Mark ${esc(p.name)} watered today">${I.check}</button></div>
+    <div class="pcard-in">
+      <div class="prow top">
+        <button class="title-btn" data-a="open-plant" data-id="${p.id}"><div class="card-title">${esc(p.name)}</div></button>
+        ${badgeHTML(p, w)}
+      </div>
+      <div class="prow bottom">
+        <button class="card-main" data-a="open-plant" data-id="${p.id}" aria-label="Open ${esc(p.name)}">${sinceHTML(w)}${fertHTML(p)}</button>
+        <div class="check-wrap"><span class="burst">${rays}</span>
+          <button class="check ${w.doneToday ? "on" : ""}" data-a="toggle" data-id="${p.id}" role="checkbox" aria-checked="${w.doneToday}" aria-label="Mark ${esc(p.name)} watered today">${I.check}</button></div>
+      </div>
     </div></div>`;
 }
 
@@ -994,23 +964,6 @@ function demoData(){
   });
   return { v: 1, plants, log };
 }
-
-/* ===================== Fan drift on scroll ===================== */
-const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
-let parRaf = 0;
-function parallax(){
-  parRaf = 0;
-  if (calm.matches) return;
-  const half = window.innerHeight / 2;
-  for (const c of app.querySelectorAll(".pcard")) {
-    const r = c.getBoundingClientRect();
-    const d = Math.max(-1, Math.min(1, (r.top + r.height / 2 - half) / half));
-    c.style.setProperty("--cx", (d * 14).toFixed(1) + "px");
-  }
-}
-const queueParallax = () => { if (!parRaf) parRaf = requestAnimationFrame(parallax); };
-window.addEventListener("scroll", queueParallax, { passive: true });
-window.addEventListener("resize", queueParallax);
 
 /* ===================== Day rollover & boot ===================== */
 function checkDay(){ const k = todayKey(); if (k !== T) { T = k; UI.week = weekStartOf(T); UI.month = T.slice(0,7); render(); if (UI.sheet && UI.sheet.type !== "form") renderSheet(); } }
