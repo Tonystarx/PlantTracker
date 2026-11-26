@@ -109,8 +109,15 @@ svg{display:block}
 .pcard.over .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--burgundy) 22%,var(--surface)),var(--surface) 75%)}
 .pcard.today .pcard-in{background:linear-gradient(90deg,color-mix(in srgb,var(--amber) 9%,var(--surface)),var(--surface) 70%)}
 
-.card-main{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;align-items:stretch;justify-content:center;align-self:stretch;padding:2px 0 4px}
-.card-title{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.15;overflow-wrap:anywhere;text-align:left;padding-left:10px}
+.card-main{flex:1;min-width:0;text-align:left;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:7px;align-content:center;align-self:stretch;padding:2px 0 4px}
+.card-main>*{grid-column:1/-1}
+/* Name lines up with the start of the "days since last watered" text */
+.card-main.has-num .card-title{grid-column:2}
+.card-main.has-num .since{display:contents}
+.card-main.has-num .since b{grid-column:1;align-self:baseline;margin-top:6px}
+.card-main.has-num .since span{grid-column:2;align-self:baseline}
+.card-main.wt .card-title{padding-left:21px}
+.card-title{font-family:var(--display);font-weight:600;font-size:24px;line-height:1.15;overflow-wrap:anywhere;text-align:left}
 .since{color:var(--muted);font-size:15px;margin-top:6px;display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
 .since b{font-family:var(--display);font-size:44px;line-height:.9;color:var(--ink);font-weight:700;letter-spacing:.02em}
 .since svg{width:14px;height:14px;align-self:center;color:var(--accent);flex:none}
@@ -629,7 +636,7 @@ function card(p){
   return `<div class="pcard ${cls}" data-id="${p.id}">
     <div class="pcard-in">
       <div class="prow">
-        <button class="card-main" data-a="open-plant" data-id="${p.id}"><div class="card-title">${esc(p.name)}</div>${sinceHTML(w)}${nextCheckHTML(w)}${fertHTML(p)}</button>
+        <button class="card-main ${w.since > 0 ? "has-num" : w.since === 0 ? "wt" : ""}" data-a="open-plant" data-id="${p.id}"><div class="card-title">${esc(p.name)}</div>${sinceHTML(w)}${nextCheckHTML(w)}${fertHTML(p)}</button>
         <div class="check-wrap"><span class="burst">${rays}</span>
           <button class="check ${w.doneToday ? "on" : ""}" data-a="toggle" data-id="${p.id}" role="checkbox" aria-checked="${w.doneToday}" aria-label="Mark ${esc(p.name)} watered today">${I.check}</button></div>
       </div>
