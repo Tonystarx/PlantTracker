@@ -268,6 +268,8 @@ svg{display:block}
 .ptable tr:last-child td{border-bottom:0}
 .cellbtn{display:block;width:100%;min-height:52px;padding:9px 4px;text-align:left;border-radius:8px}
 .ptable td.r .cellbtn{text-align:right}
+.cellbtn.open{display:flex;align-items:center;justify-content:flex-end;color:var(--muted)}
+.cellbtn.open svg{width:20px;height:20px}
 .cellbtn:active{background:var(--soft)}
 .cellbtn.sub{min-height:0;padding:0 4px 9px;margin-top:-6px;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cellbtn.add{display:flex;align-items:center;gap:6px;color:var(--accent);font-weight:600;min-height:50px}
@@ -621,6 +623,7 @@ function card(p){
 const shortDate = k => f(k, { month: "numeric", day: "numeric", year: "2-digit" });
 function viewList(){
   if (!S.plants.length) return `<div class="empty">${potArt()}<h3>No plants yet</h3><p>Every plant you add shows up here with its details.</p><button class="btn" data-a="add">Add a plant</button></div>`;
+  if (!["name", "adopted"].includes(UI.listSort.key)) UI.listSort = { key: "name", dir: 1 };
   const { key, dir } = UI.listSort;
   const val = p => {
     if (key === "name") return p.name.toLowerCase();
@@ -639,26 +642,22 @@ function viewList(){
     return `<th class="${cls}" scope="col"><button data-a="lsort" data-v="${k}" ${on ? `aria-sort="${dir > 0 ? "ascending" : "descending"}"` : ""}>${label}${on ? (dir > 0 ? I.up : I.down) : ""}</button></th>`;
   };
   const body = rows.map(p => {
-    const w = water(p);
-    const wtxt = w.since === null ? `<span class="dim">–</span>` : w.since === 0 ? "Today" : `${w.since}d ago`;
-    const wcls = w.doneToday ? "" : w.state === "over" ? "late" : w.state === "today" ? "due" : "";
     return `<tr>
       <td>${cellView(p, "name")}${cellView(p, "room")}</td>
       <td>${cellView(p, "adopted")}</td>
-      <td class="r">${cellView(p, "every")}</td>
-      <td class="r"><button class="cellbtn num ${wcls}" data-a="open-plant" data-id="${p.id}" aria-label="Open ${esc(p.name)}">${wtxt}</button></td></tr>`;
+      <td class="r"><button class="cellbtn open" data-a="open-plant" data-id="${p.id}" aria-label="Open ${esc(p.name)}">${I.right}</button></td></tr>`;
   }).join("");
   const rooms = [...new Set(S.plants.map(p => p.room).filter(Boolean))].sort();
   return `
     <div class="list-wrap"><div class="list-in">
       <table class="ptable">
-        <colgroup><col style="width:37%"><col style="width:23%"><col style="width:18%"><col style="width:22%"></colgroup>
-        <thead><tr>${th("name", "Plant")}${th("adopted", "Adopted")}${th("every", "Check", "r")}${th("watered", "Last", "r")}</tr></thead>
-        <tbody>${body}<tr class="addrow"><td colspan="4">${cellView(null, "name")}</td></tr></tbody>
+        <colgroup><col style="width:58%"><col style="width:30%"><col style="width:12%"></colgroup>
+        <thead><tr>${th("name", "Plant")}${th("adopted", "Adopted")}<th aria-label="Open"></th></tr></thead>
+        <tbody>${body}<tr class="addrow"><td colspan="3">${cellView(null, "name")}</td></tr></tbody>
       </table>
       <datalist id="listRooms">${rooms.map(r => `<option value="${esc(r)}">`).join("")}</datalist>
     </div></div>
-    <p class="footnote">Tap a name, room, adoption date, or check interval to edit it. Tap Last to open the plant. Tap a column heading to sort.</p>`;
+    <p class="footnote">Tap a name, room, or adoption date to edit it. Tap the arrow to open the plant. Tap a column heading to sort.</p>`;
 }
 
 /* ----- Inline cell editing for the All list ----- */
