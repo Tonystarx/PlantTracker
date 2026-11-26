@@ -643,7 +643,7 @@ function viewList(){
   };
   const body = rows.map(p => {
     return `<tr>
-      <td>${cellView(p, "name")}${cellView(p, "room")}</td>
+      <td>${cellView(p, "name")}</td>
       <td>${cellView(p, "adopted")}</td>
       <td class="r"><button class="cellbtn open" data-a="open-plant" data-id="${p.id}" aria-label="Open ${esc(p.name)}">${I.right}</button></td></tr>`;
   }).join("");
@@ -657,7 +657,7 @@ function viewList(){
       </table>
       <datalist id="listRooms">${rooms.map(r => `<option value="${esc(r)}">`).join("")}</datalist>
     </div></div>
-    <p class="footnote">Tap a name, room, or adoption date to edit it. Tap the arrow to open the plant. Tap a column heading to sort.</p>`;
+    <p class="footnote">Tap a name or adoption date to edit it. Tap the arrow to open the plant. Tap a column heading to sort.</p>`;
 }
 
 /* ----- Inline cell editing for the All list ----- */
