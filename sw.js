@@ -1,6 +1,6 @@
 // Plant Tracker service worker: lets the app open without a connection.
 // When you change index.html, bump CACHE so phones drop the old copy promptly.
-const CACHE = "plant-tracker-v20";
+const CACHE = "plant-tracker-v21";
 const SHELL = [
   "./",
   "./index.html",

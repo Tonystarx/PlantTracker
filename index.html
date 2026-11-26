@@ -625,10 +625,10 @@ function viewPlants(){
     </div>`;
   const pr = progress();
   const segs = pr.set.map((x, i) => `<i class="${x.on ? "on" : x.late ? "late" : ""}" style="--segw:${pr.set.length * 100}%;--segx:${pr.set.length > 1 ? (i / (pr.set.length - 1) * 100).toFixed(1) : 0}%"></i>`).join("");
-  const label = !pr.total ? "Nothing due today" : pr.done === pr.total ? "All caught up" : `${pr.done} of ${pr.total} done`;
-  const sub = pr.need ? `${pr.need} to water${pr.over ? ` · ${pr.over} overdue` : ""}` : pr.total ? "Everything checked" : "Enjoy the day off";
+  const label = !pr.total ? "Nothing due today" : pr.done === pr.total ? "All caught up" : `${pr.done} of ${pr.total} checked`;
+  const sub = pr.need ? `${pr.need} to check${pr.over ? ` · ${pr.over} overdue` : ""}` : pr.total ? "Everything checked" : "Enjoy the day off";
   return `
-    <section class="progress" aria-label="Today's watering">
+    <section class="progress" aria-label="Today's checks">
       <div class="progress-label"><b class="num">${label}</b><span class="${pr.over ? "late" : ""}">${sub}</span></div>
       ${pr.total ? `<div class="segs">${segs}</div>` : ""}
     </section>
