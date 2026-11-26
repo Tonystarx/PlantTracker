@@ -501,6 +501,8 @@ function progress(){
     const w = water(p);
     if (w.state === "over") { need++; over++; } else if (w.state === "today") need++;
   }
+  // Fill the bar from left to right: done plants first, then overdue, then the rest.
+  set.sort((x, y) => (y.on - x.on) || (y.late - x.late));
   return { set, done: set.filter(x => x.on).length, total: set.length, need, over };
 }
 
